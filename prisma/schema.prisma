@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Shipment {
+  id                    Int            @id @default(autoincrement())
+  orderId               Int            @unique
+  buyerId               Int
+  status                ShipmentStatus @default(PENDING)
+  address               String
+  shipmentDate          DateTime?
+  estimatedDeliveryDate DateTime?
+  deliveryDate          DateTime?
+  lastStatusTimestamp   DateTime       @default(now())
+  carrier               CarrierType
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  tracking              Tracking[]
+}
+
+model Tracking {
+  id          Int            @id @default(autoincrement())
+  shipmentId  Int
+  location    String
+  status      ShipmentStatus
+  description String?
+  timestamp   DateTime       @default(now())
+  shipment    Shipment       @relation(fields: [shipmentId], references: [id])
+}
+
+enum ShipmentStatus {
+  PENDING
+  PREPARING
+  IN_TRANSIT
+  DELIVERED
+}
+
+enum CarrierType {
+  MAIL
+  PICKUP
+}
