@@ -1,9 +1,11 @@
 @import "tailwindcss";
 
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
+
 
 @theme inline {
   --color-background: var(--background);
@@ -12,6 +14,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -19,8 +22,156 @@
   }
 }
 
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+
+:root {
+  --color-background: #ffffff;
+  --color-foreground: #171717;
+  --color-primary: #000000;
+  --color-on-primary: #ffffff;
+  --color-primary-dark: #27272a;
+  --color-secondary: #ffffff;
+  --color-secondary-bg: #4b5563;
+  --color-secondary-dark: #374151;
+  --color-success: #16a34a;
+  --color-success-dark: #15803d;
+  --color-success-light: #dcfce7;
+  --color-danger: #dc2626;
+  --color-danger-dark: #b91c1c;
+  --color-danger-light: #fee2e2;
+  --color-info: #2563eb;
+  --color-info-dark: #1d4ed8;
+  --color-info-light: #dbeafe;
+  --color-muted: #6b7280;
+  --color-muted-light: #f3f4f6;
+  --color-border: #d1d5db;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f8fafc;
+}
+
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+
+.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+}
+
+
+.btn-secondary {
+  background-color: var(--color-secondary-bg);
+  color: var(--color-secondary);
+}
+
+
+.btn-secondary:hover {
+  background-color: var(--color-secondary-dark);
+}
+
+
+.btn-success {
+  background-color: var(--color-success);
+  color: var(--color-secondary);
+}
+
+
+.btn-success:hover {
+  background-color: var(--color-success-dark);
+}
+
+
+.btn-danger {
+  background-color: var(--color-danger);
+  color: var(--color-secondary);
+}
+
+
+.btn-danger:hover {
+  background-color: var(--color-danger-dark);
+}
+
+
+.btn-info {
+  background-color: var(--color-info);
+  color: var(--color-secondary);
+}
+
+
+.btn-info:hover {
+  background-color: var(--color-info-dark);
+}
+
+
+.badge-danger {
+  background-color: var(--color-danger);
+  color: var(--color-secondary);
+}
+
+
+.bg-surface {
+  background-color: var(--color-surface);
+}
+
+
+.bg-surface-alt {
+  background-color: var(--color-surface-alt);
+}
+
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+
+.text-secondary {
+  color: var(--color-secondary);
+}
+
+
+.text-success {
+  color: var(--color-success);
+}
+
+
+.text-danger {
+  color: var(--color-danger);
+}
+
+
+.text-info {
+  color: var(--color-info);
+}
+
+
+.text-muted {
+  color: var(--color-muted);
+}
+
+
+.border-primary {
+  border-color: var(--color-primary);
+}
+
+
+.border-muted {
+  border-color: var(--color-border);
+}
+
+
+.border-success {
+  border-color: var(--color-success);
+}
+
+
+.border-info {
+  border-color: var(--color-info);
 }
