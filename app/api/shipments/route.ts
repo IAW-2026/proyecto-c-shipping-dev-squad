@@ -1,0 +1,34 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const shipment = await prisma.shipment.create({
+      data: {
+        orderId: body.orderId,
+        buyerId: body.buyerId,
+        address: body.address,
+        carrier: body.carrier,
+      },
+    });
+    return NextResponse.json(shipment, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: "Error al crear el envío" }, { status: 500 });
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const buyerId = req.nextUrl.searchParams.get("buyer_id");
+    if (!buyerId) {
+      return NextResponse.json({ error: "buyer_id es requerido" }, { status: 400 });
+    }
+    const shipments = await prisma.shipment.findMany({
+      where: { buyerId: parseInt(buyerId) },
+    });
+    return NextResponse.json(shipments);
+  } catch (error) {
+    return NextResponse.json({ error: "Error al obtener los envíos" }, { status: 500 });
+  }
+}
