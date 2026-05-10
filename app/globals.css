@@ -27,6 +27,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background 0.2s, color 0.2s;
 }
 
 
@@ -174,4 +175,25 @@ body {
 
 .border-info {
   border-color: var(--color-info);
+}
+
+
+[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --color-surface: #111111;
+  --color-surface-alt: #1a1a1a;
+  --color-border: #2a2a2a;
+  --color-muted: #a1a1aa;
+  --color-muted-light: #1f1f1f;
+}
+
+[data-theme="light"] {
+  --background: #f8fafc;
+  --foreground: #171717;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f3f4f6;
+  --color-border: #e5e7eb;
+  --color-muted: #6b7280;
+  --color-muted-light: #f3f4f6;
 }

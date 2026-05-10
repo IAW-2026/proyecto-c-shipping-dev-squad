@@ -19,3 +19,27 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
     return NextResponse.json({ error: "Error al obtener el tracking" }, { status: 500 });
   }
 }
+
+export async function POST(req: NextRequest, { params }: { params: Promise<{ order_id: string }> }) {
+  try {
+    const { order_id } = await params
+    const body = await req.json()
+    const shipment = await prisma.shipment.findUnique({
+      where: { orderId: parseInt(order_id) },
+    })
+    if (!shipment) {
+      return NextResponse.json({ error: "Envío no encontrado" }, { status: 404 })
+    }
+    const tracking = await prisma.tracking.create({
+      data: {
+        shipmentId: shipment.id,
+        status: shipment.status,
+        location: body.location ?? "",
+        description: body.description,
+      }
+    })
+    return NextResponse.json(tracking, { status: 201 })
+  } catch (error) {
+    return NextResponse.json({ error: "Error al crear tracking" }, { status: 500 })
+  }
+}

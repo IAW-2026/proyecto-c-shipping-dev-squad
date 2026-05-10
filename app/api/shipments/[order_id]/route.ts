@@ -27,6 +27,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
         lastStatusTimestamp: new Date(),
       },
     });
+    await prisma.tracking.create({
+      data: {
+      shipmentId: shipment.id,
+      status: body.status,
+      location: "",
+      description: body.description ?? null,
+    }
+    })
     return NextResponse.json(shipment);
   } catch (error) {
     return NextResponse.json({ error: "Error al actualizar el envío" }, { status: 500 });
