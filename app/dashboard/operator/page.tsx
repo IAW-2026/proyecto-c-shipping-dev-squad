@@ -44,11 +44,13 @@ export default function OperatorDashboard() {
   const [newStatus, setNewStatus] = useState("")
   const [description, setDescription] = useState("")
   const [loading, setLoading] = useState(false)
+  const [mensaje, setMensaje] = useState<{ texto: string; tipo: "error" | "success" } | null>(null)
+
 
   useEffect(() => {
-    fetch("/api/shipments?buyer_id=1")
+    fetch("/api/shipments")
       .then(r => r.json())
-      .then(setShipments)
+      .then(data => setShipments(Array.isArray(data) ? data : []))
   }, [])
 
   function selectShipment(s: Shipment) {
@@ -61,14 +63,21 @@ export default function OperatorDashboard() {
 
   async function updateStatus() {
     if (!selected) return
+    if (!description.trim()) {
+      setMensaje({ texto: "Agregá una descripción antes de actualizar el estado", tipo: "error" })
+      return
+    }
     setLoading(true)
     await fetch(`/api/shipments/${selected.orderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: newStatus }),
+      body: JSON.stringify({ status: newStatus, description }),
     })
     setSelected({ ...selected, status: newStatus })
     setShipments(prev => prev.map(s => s.orderId === selected.orderId ? { ...s, status: newStatus } : s))
+    setDescription("")
+    setMensaje({ texto: "Estado actualizado correctamente", tipo: "success" })
+    setTimeout(() => setMensaje(null), 3000)
     setLoading(false)
   }
 
@@ -112,14 +121,34 @@ export default function OperatorDashboard() {
 
         <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-muted)", marginBottom: 10 }}>Cambiar estado general</div>
+          
+          {mensaje && (
+            <div style={{
+              padding: "10px 14px",
+              borderRadius: 8,
+              marginBottom: 10,
+              fontSize: 13,
+              background: mensaje.tipo === "error" ? "#fee2e2" : "#dcfce7",
+              color: mensaje.tipo === "error" ? "#b91c1c" : "#15803d",
+              border: `0.5px solid ${mensaje.tipo === "error" ? "#dc2626" : "#16a34a"}`,
+            }}>
+              {mensaje.tipo === "error" ? "⚠️ " : "✅ "}{mensaje.texto}
+            </div>
+          )}
           <select
             value={newStatus}
             onChange={e => setNewStatus(e.target.value)}
             style={{ padding: "8px 12px", borderRadius: 8, border: "0.5px solid var(--color-border)", fontSize: 13, background: "var(--color-surface)", color: "var(--foreground)", width: "100%", marginBottom: 10 }}
           >
-            {STATUS_OPTIONS.map(s => (
-              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-            ))}
+            {STATUS_OPTIONS.map(s => {
+              const currentIdx = STATUS_OPTIONS.indexOf(selected.status)
+              const optionIdx = STATUS_OPTIONS.indexOf(s)
+              return (
+                <option key={s} value={s} disabled={optionIdx < currentIdx}>
+                  {STATUS_LABELS[s]} {optionIdx < currentIdx ? "✗" : ""}
+                </option>
+              )
+            })}
           </select>
           <button onClick={updateStatus} disabled={loading} style={{ width: "100%", padding: "9px", borderRadius: 8, border: "none", background: "#171717", color: "#fff", fontSize: 13, cursor: "pointer" }}>
             {loading ? "Actualizando..." : "Actualizar estado"}

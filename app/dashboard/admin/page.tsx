@@ -46,9 +46,9 @@ export default function AdminDashboard() {
   const [tracking, setTracking] = useState<TrackingItem[]>([])
 
   useEffect(() => {
-    Promise.all([1, 2, 3, 4].map(buyerId =>
-      fetch(`/api/shipments?buyer_id=${buyerId}`).then(r => r.json())
-    )).then(results => setShipments(results.flat()))
+    fetch("/api/shipments")
+      .then(r => r.json())
+      .then(data => setShipments(Array.isArray(data) ? data : []))
   }, [])
 
   function selectShipment(s: Shipment) {
@@ -257,6 +257,19 @@ export default function AdminDashboard() {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {shipments.length === 0 && (
+          <div style={{
+            padding: "2rem",
+            textAlign: "center",
+            background: "var(--color-surface)",
+            border: "0.5px solid var(--color-border)",
+            borderRadius: 12,
+            fontSize: 14,
+            color: "var(--color-muted)",
+          }}>
+            📦 No hay envíos registrados
+          </div>
+        )}
         {shipments.map(s => {
           const products = mockOrderItems[s.orderId] ?? []
           const main = products[0]

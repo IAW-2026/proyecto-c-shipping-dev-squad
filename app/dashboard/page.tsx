@@ -157,7 +157,7 @@ export default function ClientDashboard() {
                   }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                       <div style={{ fontSize: 12, fontWeight: 500, color: "var(--foreground)" }}>
-                        {isNovedad ? "📝 " : "📦 "}{t.description ?? t.location}
+                        📦 {t.description}
                       </div>
                       <span style={{ fontSize: 11, color: "var(--color-muted)", marginLeft: 8, flexShrink: 0 }}>
                         {STATUS_LABELS[t.status]}
@@ -245,6 +245,19 @@ export default function ClientDashboard() {
       <div style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: "1.5rem" }}>Seguí el estado de tus pedidos</div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {shipments.length === 0 && (
+          <div style={{
+            padding: "2rem",
+            textAlign: "center",
+            background: "var(--color-surface)",
+            border: "0.5px solid var(--color-border)",
+            borderRadius: 12,
+            fontSize: 14,
+            color: "var(--color-muted)",
+          }}>
+            📦 No tenés envíos activos por el momento
+          </div>
+        )}
         {shipments.map(s => {
           const products = mockOrderItems[s.orderId] ?? []
           const main = products[0]

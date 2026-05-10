@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useUser, UserButton } from "@clerk/nextjs"
+import Image from "next/image"
 
 export default function Navbar() {
   const { user } = useUser()
@@ -31,15 +32,13 @@ export default function Navbar() {
       zIndex: 10,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: 8,
-          background: "#171717",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 18,
-        }}>👟</div>
-        <span style={{ fontSize: 16, fontWeight: 500, color: dark ? "#ededed" : "#171717" }}>
-          ZapasYA
-        </span>
+        <Image
+          src={dark ? "/logo-oscuro.png" : "/logo-claro.png"}
+          alt="ZapasYA"
+          width={140}
+          height={40}
+          priority
+        />
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
         <button

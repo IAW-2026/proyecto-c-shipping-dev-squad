@@ -1,65 +1,171 @@
-import Image from "next/image";
+'use client'
+
+import { useAuth, SignInButton } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import Image from "next/image"
 
 export default function Home() {
+  const { isSignedIn } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (isSignedIn) router.push("/dashboard")
+  }, [isSignedIn])
+
+  const cards = [
+    { img: "/slide1.svg", title: "Preparamos tu pedido", sub: "Cada orden es empacada con cuidado" },
+    { img: "/slide2.svg", title: "Recibí lo que compraste", sub: "Coordinamos la entrega por vos" },
+    { img: "/slide3.svg", title: "Tu pedido viaja hacia vos", sub: "Seguí cada movimiento en tiempo real" },
+    { img: "/slide4.svg", title: "Entrega rápida y segura", sub: "Nos encargamos de llevarlo hasta tu puerta" },
+  ]
+
+  const [dark, setDark] = useState(false)
+
+  useEffect(() => {
+    const checkTheme = () => {
+      const html = document.documentElement
+      const isDark =
+        html.getAttribute("data-theme") === "dark" ||
+        html.classList.contains("dark") ||
+        (!html.getAttribute("data-theme") &&
+          !html.classList.contains("light") &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches)
+
+      setDark(isDark)
+    }
+
+    checkTheme()
+
+    // Observa cambios de atributos Y de clases en <html>
+    const observer = new MutationObserver(checkTheme)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme", "class"],
+    })
+
+    // También escucha cambios en la preferencia del sistema
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+    mediaQuery.addEventListener("change", checkTheme)
+
+    return () => {
+      observer.disconnect()
+      mediaQuery.removeEventListener("change", checkTheme)
+    }
+  }, [])
+  
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <>
+      <style>{`
+        .landing-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          min-height: calc(100vh - 56px);
+        }
+        .landing-right {
+          display: flex;
+          flex-wrap: wrap;
+          align-content: center;
+          justify-content: center;
+          gap: 16px;
+          padding: 2rem;
+          background: var(--color-surface-alt);
+        }
+        .landing-left {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 4rem 3rem;
+          background: var(--color-surface);
+        }
+        @media (max-width: 640px) {
+          .landing-grid {
+            grid-template-columns: 1fr;
+          }
+          .landing-left {
+            padding: 3rem 1.5rem;
+          }
+          .landing-right {
+            padding: 1.5rem;
+          }
+        }
+      `}</style>
+
+      <div className="landing-grid">
+        {/* IZQUIERDA — Login */}
+        <div className="landing-left">
+        <div
+          style={{
+            marginBottom: -50,
+            marginLeft: "-1.5 rem",
+
+            width: "fit-content",
+            lineHeight: 0,
+          }}
+        >
+          <Image
+            src={dark ? "/logo-oscuro.png" : "/logo-claro.png"}
+            alt="ZapasYA"
+            width={180}
+            height={40}
+            priority
+            style={{
+              width: "clamp(280px, 38vw, 450px)",
+              height: "auto",
+              display: "block",
+              objectFit: "contain",
+            }}
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          <div style={{ fontSize: 28, fontWeight: 700, color: "var(--foreground)", marginBottom: 8 }}>
+            Seguí tu envío ahora
+          </div>
+          <div style={{ fontSize: 15, color: "var(--color-muted)", marginBottom: "2rem" }}>
+            Conocé el estado de tus envíos en todo momento.
+          </div>
+
+          <SignInButton mode="modal">
+            <button style={{
+              padding: "12px 24px",
+              borderRadius: 10,
+              border: "1px solid var(--foreground)",
+              background: "var(--foreground)",
+              color: "var(--background)",
+              fontSize: 15,
+              fontWeight: 500,
+              cursor: "pointer",
+              width: "fit-content",
+            }}>
+              Iniciar sesión →
+            </button>
+          </SignInButton>
+
+          <div style={{ marginTop: "1.5rem", fontSize: 13, color: "var(--color-muted)" }}>
+            ¿No tenés cuenta?{" "}
+            <span style={{ color: "var(--foreground)", cursor: "pointer", textDecoration: "underline" }}>
+              Registrate
+            </span>
+            {" "}para ver todos tus envíos.
+          </div>
         </div>
-      </main>
-    </div>
-  );
+
+        {/* DERECHA — Collage */}
+        <div className="landing-right">
+          {cards.map((c, i) => (
+            <div key={i} style={{
+              background: "var(--color-surface)",
+              borderRadius: 16,
+              padding: "1.25rem",
+              width: "45%",
+              border: "0.5px solid var(--color-border)",
+            }}>
+              <img src={c.img} alt={c.title} style={{ width: "100%", height: 100, objectFit: "contain" }} />
+              <div style={{ fontSize: 14, fontWeight: 500, color: "var(--foreground)", marginTop: 8 }}>{c.title}</div>
+              <div style={{ fontSize: 12, color: "var(--color-muted)" }}>{c.sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  )
 }

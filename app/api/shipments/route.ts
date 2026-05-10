@@ -20,15 +20,15 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const buyerId = req.nextUrl.searchParams.get("buyer_id");
-    if (!buyerId) {
-      return NextResponse.json({ error: "buyer_id es requerido" }, { status: 400 });
-    }
+    const buyerId = req.nextUrl.searchParams.get("buyer_id")
+    
     const shipments = await prisma.shipment.findMany({
-      where: { buyerId: parseInt(buyerId) },
-    });
-    return NextResponse.json(shipments);
+      where: buyerId ? { buyerId: parseInt(buyerId) } : undefined,
+      orderBy: { createdAt: "desc" },
+    })
+    
+    return NextResponse.json(shipments)
   } catch (error) {
-    return NextResponse.json({ error: "Error al obtener los envíos" }, { status: 500 });
+    return NextResponse.json({ error: "Error al obtener los envíos" }, { status: 500 })
   }
 }
