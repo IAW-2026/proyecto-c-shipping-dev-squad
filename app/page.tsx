@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth, SignInButton } from "@clerk/nextjs"
+import { useAuth, SignInButton, SignUpButton } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Image from "next/image"
@@ -142,9 +142,11 @@ export default function Home() {
 
           <div style={{ marginTop: "1.5rem", fontSize: 13, color: "var(--color-muted)" }}>
             ¿No tenés cuenta?{" "}
-            <span style={{ color: "var(--foreground)", cursor: "pointer", textDecoration: "underline" }}>
-              Registrate
-            </span>
+            <SignUpButton mode="modal">
+              <span style={{ color: "var(--foreground)", cursor: "pointer", textDecoration: "underline" }}>
+                Registrate
+              </span>
+            </SignUpButton>
             {" "}para ver todos tus envíos.
           </div>
         </div>

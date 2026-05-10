@@ -44,13 +44,16 @@ export default function OperatorDashboard() {
   const [newStatus, setNewStatus] = useState("")
   const [description, setDescription] = useState("")
   const [loading, setLoading] = useState(false)
+  const [loadingList, setLoadingList] = useState(true)
   const [mensaje, setMensaje] = useState<{ texto: string; tipo: "error" | "success" } | null>(null)
-
 
   useEffect(() => {
     fetch("/api/shipments")
       .then(r => r.json())
-      .then(data => setShipments(Array.isArray(data) ? data : []))
+      .then(data => {
+        setShipments(Array.isArray(data) ? data : [])
+        setLoadingList(false)
+      })
   }, [])
 
   function selectShipment(s: Shipment) {
@@ -81,19 +84,21 @@ export default function OperatorDashboard() {
     setLoading(false)
   }
 
-    async function addTracking() {
+  async function addTracking() {
     if (!selected || !description.trim()) return
     setLoading(true)
     const res = await fetch(`/api/shipments/${selected.orderId}/tracking`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description }),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description }),
     })
     const newItem = await res.json()
     setTracking(prev => [newItem, ...prev])
     setDescription("")
+    setMensaje({ texto: "Novedad registrada correctamente", tipo: "success" })
+    setTimeout(() => setMensaje(null), 3000)
     setLoading(false)
-    }
+  }
 
   if (selected) {
     const sc = STATUS_COLORS[selected.status]
@@ -121,7 +126,7 @@ export default function OperatorDashboard() {
 
         <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-muted)", marginBottom: 10 }}>Cambiar estado general</div>
-          
+
           {mensaje && (
             <div style={{
               padding: "10px 14px",
@@ -135,6 +140,7 @@ export default function OperatorDashboard() {
               {mensaje.tipo === "error" ? "⚠️ " : "✅ "}{mensaje.texto}
             </div>
           )}
+
           <select
             value={newStatus}
             onChange={e => setNewStatus(e.target.value)}
@@ -150,6 +156,12 @@ export default function OperatorDashboard() {
               )
             })}
           </select>
+          <input
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            placeholder="Descripción del cambio de estado"
+            style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "0.5px solid var(--color-border)", fontSize: 13, background: "var(--color-surface)", color: "var(--foreground)", marginBottom: 10 }}
+          />
           <button onClick={updateStatus} disabled={loading} style={{ width: "100%", padding: "9px", borderRadius: 8, border: "none", background: "#171717", color: "#fff", fontSize: 13, cursor: "pointer" }}>
             {loading ? "Actualizando..." : "Actualizar estado"}
           </button>
@@ -186,29 +198,47 @@ export default function OperatorDashboard() {
       <div style={{ fontSize: 18, fontWeight: 500, color: "var(--foreground)", marginBottom: 4 }}>Gestión de envíos</div>
       <div style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: "1.5rem" }}>Actualizá estados y registrá novedades</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {shipments.map(s => {
-          const products = mockOrderItems[s.orderId] ?? []
-          const main = products[0]
-          const sc = STATUS_COLORS[s.status]
-          return (
-            <div key={s.id} onClick={() => selectShipment(s)} style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 16, overflow: "hidden", display: "flex", cursor: "pointer" }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
-              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-            >
-              <div style={{ width: 100, minHeight: 100, background: "var(--color-surface-alt)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 42, flexShrink: 0 }}>
-                {main?.image ?? "👟"}
+        {loadingList ? (
+          <div style={{ padding: "2rem", textAlign: "center", fontSize: 14, color: "var(--color-muted)" }}>
+            Cargando envíos...
+          </div>
+        ) : shipments.length === 0 ? (
+          <div style={{
+            padding: "2rem",
+            textAlign: "center",
+            background: "var(--color-surface)",
+            border: "0.5px solid var(--color-border)",
+            borderRadius: 12,
+            fontSize: 14,
+            color: "var(--color-muted)",
+          }}>
+            📦 No hay envíos para gestionar
+          </div>
+        ) : (
+          shipments.map(s => {
+            const products = mockOrderItems[s.orderId] ?? []
+            const main = products[0]
+            const sc = STATUS_COLORS[s.status]
+            return (
+              <div key={s.id} onClick={() => selectShipment(s)} style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 16, overflow: "hidden", display: "flex", cursor: "pointer" }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+                onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+              >
+                <div style={{ width: 100, minHeight: 100, background: "var(--color-surface-alt)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 42, flexShrink: 0 }}>
+                  {main?.image ?? "👟"}
+                </div>
+                <div style={{ padding: "1rem 1.25rem", flex: 1 }}>
+                  <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>Orden #{s.orderId}</div>
+                  <div style={{ fontSize: 15, fontWeight: 500, color: "var(--foreground)", marginBottom: 2 }}>{main?.name ?? "Producto"}</div>
+                  <div style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 10 }}>{s.address}</div>
+                  <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 99, fontSize: 11, fontWeight: 500, background: sc.bg, color: sc.color }}>
+                    {STATUS_LABELS[s.status]}
+                  </span>
+                </div>
               </div>
-              <div style={{ padding: "1rem 1.25rem", flex: 1 }}>
-                <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>Orden #{s.orderId}</div>
-                <div style={{ fontSize: 15, fontWeight: 500, color: "var(--foreground)", marginBottom: 2 }}>{main?.name ?? "Producto"}</div>
-                <div style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 10 }}>{s.address}</div>
-                <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 99, fontSize: 11, fontWeight: 500, background: sc.bg, color: sc.color }}>
-                  {STATUS_LABELS[s.status]}
-                </span>
-              </div>
-            </div>
-          )
-        })}
+            )
+          })
+        )}
       </div>
     </div>
   )

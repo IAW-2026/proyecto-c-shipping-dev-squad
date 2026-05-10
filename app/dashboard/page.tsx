@@ -45,11 +45,15 @@ export default function ClientDashboard() {
   const [shipments, setShipments] = useState<Shipment[]>([])
   const [selected, setSelected] = useState<Shipment | null>(null)
   const [tracking, setTracking] = useState<TrackingItem[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetch("/api/shipments?buyer_id=1")
       .then(r => r.json())
-      .then(setShipments)
+      .then(data => {
+        setShipments(data)
+        setLoading(false)
+      })
   }, [])
 
   function selectShipment(s: Shipment) {
@@ -144,7 +148,11 @@ export default function ClientDashboard() {
           
              <div style={{ borderTop: "0.5px solid var(--color-border)", paddingTop: 12, marginTop: 4 }}>
               <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-muted)", marginBottom: 8 }}>Historial completo</div>
-              {[...tracking].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map(t => {
+              {[...tracking].sort((a, b) => {
+                const timeDiff = new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+                if (timeDiff !== 0) return timeDiff
+                return STEPS.indexOf(b.status) - STEPS.indexOf(a.status)
+              }).map(t => {
                 const isNovedad = t.description && !DEFAULT_DESCRIPTIONS.includes(t.description)
                 const statusStyle = STATUS_COLORS[t.status] ?? {bg: "#f3f4f6",color: "#6b7280",}
                 return (
@@ -240,12 +248,21 @@ export default function ClientDashboard() {
   }
 
   return (
-    <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
+      <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
       <div style={{ fontSize: 18, fontWeight: 500, color: "var(--foreground)", marginBottom: 4 }}>Mis envíos</div>
       <div style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: "1.5rem" }}>Seguí el estado de tus pedidos</div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {shipments.length === 0 && (
+        {loading ? (
+          <div style={{
+            padding: "2rem",
+            textAlign: "center",
+            fontSize: 14,
+            color: "var(--color-muted)",
+          }}>
+            Cargando envíos...
+          </div>
+        ) : shipments.length === 0 ? (
           <div style={{
             padding: "2rem",
             textAlign: "center",
@@ -257,58 +274,55 @@ export default function ClientDashboard() {
           }}>
             📦 No tenés envíos activos por el momento
           </div>
-        )}
-        {shipments.map(s => {
-          const products = mockOrderItems[s.orderId] ?? []
-          const main = products[0]
-          const sc = STATUS_COLORS[s.status]
-          return (
-            <div key={s.id} onClick={() => selectShipment(s)} style={{
-              background: "var(--color-surface)",
-              border: "0.5px solid var(--color-border)",
-              borderRadius: 16,
-              overflow: "hidden",
-              display: "flex",
-              cursor: "pointer",
-              minHeight: 140,
-              transition: "opacity 0.15s",
-            }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
-              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-            >
-              <div style={{
-                width: 160,
-                background: "var(--color-surface-alt)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 64, flexShrink: 0,
-              }}>
-                {main?.image ?? "👟"}
-              </div>
-              <div style={{ padding: "1.25rem", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                <div>
-                  <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>Orden #{s.orderId}</div>
-                  <div style={{ fontSize: 17, fontWeight: 500, color: "var(--foreground)", marginBottom: 4 }}>{main?.name ?? "Producto"}</div>
-                  <div style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: 12 }}>
-                    {main?.brand} · Talle {main?.size}
-                    {products.length > 1 && ` · +${products.length - 1} más`}
+        ) : (
+          shipments.map(s => {
+            const products = mockOrderItems[s.orderId] ?? []
+            const main = products[0]
+            const sc = STATUS_COLORS[s.status]
+            return (
+              <div key={s.id} onClick={() => selectShipment(s)} style={{
+                background: "var(--color-surface)",
+                border: "0.5px solid var(--color-border)",
+                borderRadius: 16, overflow: "hidden",
+                display: "flex", cursor: "pointer", minHeight: 140,
+                transition: "opacity 0.15s",
+              }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+                onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+              >
+                <div style={{
+                  width: 100, minWidth: 100,background: "var(--color-surface-alt)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 48, flexShrink: 0,
+                }}>
+                  {main?.image ?? "👟"}
+                </div>
+                <div style={{ padding: "0.875rem", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <div>
+                    <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>Orden #{s.orderId}</div>
+                    <div style={{ fontSize: 15, fontWeight: 500, color: "var(--foreground)", marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"  }}>{main?.name ?? "Producto"}</div>
+                    <div style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 10, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"  }}>
+                      {main?.brand} · Talle {main?.size}
+                      {products.length > 1 && ` · +${products.length - 1} más`}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap"  }}>
+                    <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 99, fontSize: 11, fontWeight: 500, background: sc.bg, color: sc.color, whiteSpace: "nowrap" }}>
+                      {STATUS_LABELS[s.status]}
+                    </span>
+                    <span style={{ fontSize: 11, color: "var(--color-muted)", whiteSpace: "nowrap" }}>
+                      {s.status === "DELIVERED" && s.deliveryDate
+                        ? `Entregado ${new Date(s.deliveryDate).toLocaleDateString("es-AR")}`
+                        : s.estimatedDeliveryDate
+                        ? `Est. ${new Date(s.estimatedDeliveryDate).toLocaleDateString("es-AR")}`
+                        : ""} →
+                    </span>
                   </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, fontSize: 12, fontWeight: 500, background: sc.bg, color: sc.color }}>
-                    {STATUS_LABELS[s.status]}
-                  </span>
-                  <span style={{ fontSize: 12, color: "var(--color-muted)" }}>
-                    {s.status === "DELIVERED" && s.deliveryDate
-                      ? `Entregado ${new Date(s.deliveryDate).toLocaleDateString("es-AR")}`
-                      : s.estimatedDeliveryDate
-                      ? `Est. ${new Date(s.estimatedDeliveryDate).toLocaleDateString("es-AR")}`
-                      : ""} →
-                  </span>
-                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })
+        )}
       </div>
     </div>
   )

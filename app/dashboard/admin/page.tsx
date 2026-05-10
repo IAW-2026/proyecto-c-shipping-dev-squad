@@ -44,11 +44,15 @@ export default function AdminDashboard() {
   const [shipments, setShipments] = useState<Shipment[]>([])
   const [selected, setSelected] = useState<Shipment | null>(null)
   const [tracking, setTracking] = useState<TrackingItem[]>([])
+  const [loadingList, setLoadingList] = useState(true)
 
   useEffect(() => {
     fetch("/api/shipments")
       .then(r => r.json())
-      .then(data => setShipments(Array.isArray(data) ? data : []))
+      .then(data => {
+        setShipments(Array.isArray(data) ? data : [])
+        setLoadingList(false)
+      })
   }, [])
 
   function selectShipment(s: Shipment) {
@@ -79,7 +83,7 @@ export default function AdminDashboard() {
     const total = products.reduce((sum, p) => sum + p.price * p.quantity, 0)
 
     return (
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "2rem 1rem" }}>
+      <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
         <div onClick={() => setSelected(null)} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>
           ← Volver al panel
         </div>
@@ -99,6 +103,7 @@ export default function AdminDashboard() {
                 {STATUS_LABELS[selected.status]}
               </span>
             </div>
+
             {STEPS.map((step, i) => {
               const state = getStepState(step, selected.status)
               const isLast = i === STEPS.length - 1
@@ -140,17 +145,18 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 </div>
-
-
               )
             })}
 
-            
-             <div style={{ borderTop: "0.5px solid var(--color-border)", paddingTop: 12, marginTop: 4 }}>
+            <div style={{ borderTop: "0.5px solid var(--color-border)", paddingTop: 12, marginTop: 4 }}>
               <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-muted)", marginBottom: 8 }}>Historial completo</div>
-              {[...tracking].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map(t => {
+              {[...tracking].sort((a, b) => {
+                const timeDiff = new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+                if (timeDiff !== 0) return timeDiff
+                return STEPS.indexOf(b.status) - STEPS.indexOf(a.status)
+              }).map(t => {
                 const isNovedad = t.description && !DEFAULT_DESCRIPTIONS.includes(t.description)
-                const statusStyle = STATUS_COLORS[t.status] ?? {bg: "#f3f4f6",color: "#6b7280",}
+                const statusStyle = STATUS_COLORS[t.status] ?? { bg: "#f3f4f6", color: "#6b7280" }
                 return (
                   <div key={t.id} style={{
                     padding: "8px 10px",
@@ -257,7 +263,11 @@ export default function AdminDashboard() {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {shipments.length === 0 && (
+        {loadingList ? (
+          <div style={{ padding: "2rem", textAlign: "center", fontSize: 14, color: "var(--color-muted)" }}>
+            Cargando envíos...
+          </div>
+        ) : shipments.length === 0 ? (
           <div style={{
             padding: "2rem",
             textAlign: "center",
@@ -269,46 +279,47 @@ export default function AdminDashboard() {
           }}>
             📦 No hay envíos registrados
           </div>
+        ) : (
+          shipments.map(s => {
+            const products = mockOrderItems[s.orderId] ?? []
+            const main = products[0]
+            const sc = STATUS_COLORS[s.status]
+            return (
+              <div key={s.id} onClick={() => selectShipment(s)} style={{
+                background: "var(--color-surface)",
+                border: "0.5px solid var(--color-border)",
+                borderRadius: 16, overflow: "hidden",
+                display: "flex", cursor: "pointer", minHeight: 120,
+              }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+                onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+              >
+                <div style={{ width: 100, minWidth: 100, background: "var(--color-surface-alt)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, flexShrink: 0 }}>
+                  {main?.image ?? "👟"}
+                </div>
+                <div style={{ padding: "0.875rem 1rem", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", minWidth: 0 }}>
+                  <div>
+                    <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>Orden #{s.orderId} · Buyer #{s.buyerId}</div>
+                    <div style={{ fontSize: 15, fontWeight: 500, color: "var(--foreground)", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{main?.name ?? "Producto"}</div>
+                    <div style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 10, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.address}</div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                    <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 99, fontSize: 11, fontWeight: 500, background: sc.bg, color: sc.color, whiteSpace: "nowrap" }}>
+                      {STATUS_LABELS[s.status]}
+                    </span>
+                    <span style={{ fontSize: 11, color: "var(--color-muted)", whiteSpace: "nowrap" }}>
+                      {s.status === "DELIVERED" && s.deliveryDate
+                        ? `Entregado ${new Date(s.deliveryDate).toLocaleDateString("es-AR")}`
+                        : s.estimatedDeliveryDate
+                        ? `Est. ${new Date(s.estimatedDeliveryDate).toLocaleDateString("es-AR")}`
+                        : ""}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          })
         )}
-        {shipments.map(s => {
-          const products = mockOrderItems[s.orderId] ?? []
-          const main = products[0]
-          const sc = STATUS_COLORS[s.status]
-          return (
-            <div key={s.id} onClick={() => selectShipment(s)} style={{
-              background: "var(--color-surface)",
-              border: "0.5px solid var(--color-border)",
-              borderRadius: 16, overflow: "hidden",
-              display: "flex", cursor: "pointer", minHeight: 120,
-            }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
-              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-            >
-              <div style={{ width: 120, background: "var(--color-surface-alt)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48, flexShrink: 0 }}>
-                {main?.image ?? "👟"}
-              </div>
-              <div style={{ padding: "1rem 1.25rem", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                <div>
-                  <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>Orden #{s.orderId} · Buyer #{s.buyerId}</div>
-                  <div style={{ fontSize: 15, fontWeight: 500, color: "var(--foreground)", marginBottom: 2 }}>{main?.name ?? "Producto"}</div>
-                  <div style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 10 }}>{s.address}</div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 99, fontSize: 11, fontWeight: 500, background: sc.bg, color: sc.color }}>
-                    {STATUS_LABELS[s.status]}
-                  </span>
-                  <span style={{ fontSize: 12, color: "var(--color-muted)" }}>
-                    {s.status === "DELIVERED" && s.deliveryDate
-                      ? `Entregado ${new Date(s.deliveryDate).toLocaleDateString("es-AR")}`
-                      : s.estimatedDeliveryDate
-                      ? `Est. ${new Date(s.estimatedDeliveryDate).toLocaleDateString("es-AR")}`
-                      : ""}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )
-        })}
       </div>
     </div>
   )
