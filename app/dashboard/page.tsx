@@ -46,6 +46,7 @@ export default function ClientDashboard() {
   const [selected, setSelected] = useState<Shipment | null>(null)
   const [tracking, setTracking] = useState<TrackingItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [filtro, setFiltro] = useState("TODOS")
 
   useEffect(() => {
     fetch("/api/shipments?buyer_id=1")
@@ -251,18 +252,32 @@ export default function ClientDashboard() {
       <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
       <div style={{ fontSize: 18, fontWeight: 500, color: "var(--foreground)", marginBottom: 4 }}>Mis envíos</div>
       <div style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: "1.5rem" }}>Seguí el estado de tus pedidos</div>
-
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+        {["TODOS", "PENDING", "PREPARING", "IN_TRANSIT", "DELIVERED"].map(f => (
+          <button
+            key={f}
+            onClick={() => setFiltro(f)}
+            style={{
+              padding: "6px 14px",
+              borderRadius: 99,
+              border: "0.5px solid var(--color-border)",
+              fontSize: 12,
+              cursor: "pointer",
+              background: filtro === f ? "#171717" : "var(--color-surface)",
+              color: filtro === f ? "#fff" : "var(--foreground)",
+              fontWeight: filtro === f ? 500 : 400,
+            }}
+          >
+            {f === "TODOS" ? "Todos" : STATUS_LABELS[f]}
+          </button>
+        ))}
+      </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {loading ? (
-          <div style={{
-            padding: "2rem",
-            textAlign: "center",
-            fontSize: 14,
-            color: "var(--color-muted)",
-          }}>
+         <div style={{ padding: "2rem", textAlign: "center", fontSize: 14, color: "var(--color-muted)" }}>
             Cargando envíos...
           </div>
-        ) : shipments.length === 0 ? (
+        ) : shipments.filter(s => filtro === "TODOS" || s.status === filtro).length === 0 ? (
           <div style={{
             padding: "2rem",
             textAlign: "center",
@@ -272,10 +287,12 @@ export default function ClientDashboard() {
             fontSize: 14,
             color: "var(--color-muted)",
           }}>
-            📦 No tenés envíos activos por el momento
+            {filtro === "TODOS" ? "📦 No hay envíos registrados" : `📦 No tenes envíos en estado "${STATUS_LABELS[filtro]}"`}
           </div>
         ) : (
-          shipments.map(s => {
+          shipments
+          .filter(s => filtro === "TODOS" || s.status === filtro)
+          .map(s => {
             const products = mockOrderItems[s.orderId] ?? []
             const main = products[0]
             const sc = STATUS_COLORS[s.status]

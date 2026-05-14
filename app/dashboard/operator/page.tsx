@@ -43,9 +43,11 @@ export default function OperatorDashboard() {
   const [tracking, setTracking] = useState<TrackingItem[]>([])
   const [newStatus, setNewStatus] = useState("")
   const [description, setDescription] = useState("")
+  const [novedad, setNovedad] = useState("")
   const [loading, setLoading] = useState(false)
   const [loadingList, setLoadingList] = useState(true)
   const [mensaje, setMensaje] = useState<{ texto: string; tipo: "error" | "success" } | null>(null)
+  const [filtro, setFiltro] = useState("TODOS")
 
   useEffect(() => {
     fetch("/api/shipments")
@@ -70,6 +72,9 @@ export default function OperatorDashboard() {
       setMensaje({ texto: "Agregá una descripción antes de actualizar el estado", tipo: "error" })
       return
     }
+    const updatedTracking = await fetch(`/api/shipments/${selected.orderId}/tracking`)
+      .then(r => r.json())
+    setTracking([...updatedTracking].reverse())
     setLoading(true)
     await fetch(`/api/shipments/${selected.orderId}`, {
       method: "PATCH",
@@ -85,16 +90,18 @@ export default function OperatorDashboard() {
   }
 
   async function addTracking() {
-    if (!selected || !description.trim()) return
+    if (!selected || !novedad.trim()) return
     setLoading(true)
     const res = await fetch(`/api/shipments/${selected.orderId}/tracking`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description }),
+      body: JSON.stringify({ description: novedad }),
     })
     const newItem = await res.json()
-    setTracking(prev => [newItem, ...prev])
-    setDescription("")
+    const updatedTracking = await fetch(`/api/shipments/${selected.orderId}/tracking`)
+      .then(r => r.json())
+    setTracking([...updatedTracking].reverse())
+    setNovedad("")
     setMensaje({ texto: "Novedad registrada correctamente", tipo: "success" })
     setTimeout(() => setMensaje(null), 3000)
     setLoading(false)
@@ -171,12 +178,12 @@ export default function OperatorDashboard() {
           <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-muted)", marginBottom: 4 }}>Registrar novedad</div>
           <div style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 10 }}>El estado general no cambia.</div>
           <input
-            value={description}
-            onChange={e => setDescription(e.target.value)}
+            value={novedad}
+            onChange={e => setNovedad(e.target.value)}
             placeholder="Ej: Salió del centro de distribución en CABA"
             style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "0.5px solid var(--color-border)", fontSize: 13, background: "var(--color-surface)", color: "var(--foreground)", marginBottom: 10 }}
           />
-          <button onClick={addTracking} disabled={loading || !description.trim()} style={{ width: "100%", padding: "9px", borderRadius: 8, border: "none", background: "#171717", color: "#fff", fontSize: 13, cursor: "pointer" }}>
+          <button onClick={addTracking} disabled={loading || !novedad.trim()} style={{ width: "100%", padding: "9px", borderRadius: 8, border: "none", background: "#171717", color: "#fff", fontSize: 13, cursor: "pointer" }}>
             Agregar novedad
           </button>
 
@@ -197,12 +204,32 @@ export default function OperatorDashboard() {
     <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
       <div style={{ fontSize: 18, fontWeight: 500, color: "var(--foreground)", marginBottom: 4 }}>Gestión de envíos</div>
       <div style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: "1.5rem" }}>Actualizá estados y registrá novedades</div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+        {["TODOS", "PENDING", "PREPARING", "IN_TRANSIT", "DELIVERED"].map(f => (
+          <button
+            key={f}
+            onClick={() => setFiltro(f)}
+            style={{
+              padding: "6px 14px",
+              borderRadius: 99,
+              border: "0.5px solid var(--color-border)",
+              fontSize: 12,
+              cursor: "pointer",
+              background: filtro === f ? "#171717" : "var(--color-surface)",
+              color: filtro === f ? "#fff" : "var(--foreground)",
+              fontWeight: filtro === f ? 500 : 400,
+            }}
+          >
+            {f === "TODOS" ? "Todos" : STATUS_LABELS[f]}
+          </button>
+        ))}
+      </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {loadingList ? (
           <div style={{ padding: "2rem", textAlign: "center", fontSize: 14, color: "var(--color-muted)" }}>
             Cargando envíos...
           </div>
-        ) : shipments.length === 0 ? (
+        ) : shipments.filter(s => filtro === "TODOS" || s.status === filtro).length === 0 ? (
           <div style={{
             padding: "2rem",
             textAlign: "center",
@@ -212,10 +239,12 @@ export default function OperatorDashboard() {
             fontSize: 14,
             color: "var(--color-muted)",
           }}>
-            📦 No hay envíos para gestionar
+            {filtro === "TODOS" ? "📦 No hay envíos registrados" : `📦 No hay envíos en estado "${STATUS_LABELS[filtro]}"`}
           </div>
         ) : (
-          shipments.map(s => {
+          shipments
+          .filter(s => filtro === "TODOS" || s.status === filtro)
+          .map(s => {
             const products = mockOrderItems[s.orderId] ?? []
             const main = products[0]
             const sc = STATUS_COLORS[s.status]

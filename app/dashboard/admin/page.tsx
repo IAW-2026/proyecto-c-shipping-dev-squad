@@ -45,6 +45,7 @@ export default function AdminDashboard() {
   const [selected, setSelected] = useState<Shipment | null>(null)
   const [tracking, setTracking] = useState<TrackingItem[]>([])
   const [loadingList, setLoadingList] = useState(true)
+  const [filtro, setFiltro] = useState("TODOS")
 
   useEffect(() => {
     fetch("/api/shipments")
@@ -261,26 +262,47 @@ export default function AdminDashboard() {
           </div>
         ))}
       </div>
-
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+        {["TODOS", "PENDING", "PREPARING", "IN_TRANSIT", "DELIVERED"].map(f => (
+          <button
+            key={f}
+            onClick={() => setFiltro(f)}
+            style={{
+              padding: "6px 14px",
+              borderRadius: 99,
+              border: "0.5px solid var(--color-border)",
+              fontSize: 12,
+              cursor: "pointer",
+              background: filtro === f ? "#171717" : "var(--color-surface)",
+              color: filtro === f ? "#fff" : "var(--foreground)",
+              fontWeight: filtro === f ? 500 : 400,
+            }}
+          >
+            {f === "TODOS" ? "Todos" : STATUS_LABELS[f]}
+          </button>
+        ))}
+      </div>    
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {loadingList ? (
-          <div style={{ padding: "2rem", textAlign: "center", fontSize: 14, color: "var(--color-muted)" }}>
-            Cargando envíos...
-          </div>
-        ) : shipments.length === 0 ? (
-          <div style={{
-            padding: "2rem",
-            textAlign: "center",
-            background: "var(--color-surface)",
-            border: "0.5px solid var(--color-border)",
-            borderRadius: 12,
-            fontSize: 14,
-            color: "var(--color-muted)",
-          }}>
-            📦 No hay envíos registrados
-          </div>
+       <div style={{ padding: "2rem", textAlign: "center", fontSize: 14, color: "var(--color-muted)" }}>
+        Cargando envíos...
+      </div>
+    ) : shipments.filter(s => filtro === "TODOS" || s.status === filtro).length === 0 ? (
+      <div style={{
+        padding: "2rem",
+        textAlign: "center",
+        background: "var(--color-surface)",
+        border: "0.5px solid var(--color-border)",
+        borderRadius: 12,
+        fontSize: 14,
+        color: "var(--color-muted)",
+      }}>
+        {filtro === "TODOS" ? "📦 No hay envíos registrados" : `📦 No hay envíos en estado "${STATUS_LABELS[filtro]}"`}
+      </div>
         ) : (
-          shipments.map(s => {
+          shipments
+          .filter(s => filtro === "TODOS" || s.status === filtro)
+          .map(s => {
             const products = mockOrderItems[s.orderId] ?? []
             const main = products[0]
             const sc = STATUS_COLORS[s.status]
