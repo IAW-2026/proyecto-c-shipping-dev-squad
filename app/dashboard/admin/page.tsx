@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 
 type Shipment = {
   id: number
@@ -28,45 +28,127 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   DELIVERED: { bg: "#dcfce7", color: "#15803d" },
 }
 
+const MONTH_NAMES = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+]
+
+function getAvailableMonths(shipments: Shipment[]): { year: number; month: number }[] {
+  const set = new Set<string>()
+  shipments.forEach(s => {
+    const date = s.shipmentDate ?? s.estimatedDeliveryDate ?? s.deliveryDate
+    if (date) {
+      const d = new Date(date)
+      if (!isNaN(d.getTime())) {
+        set.add(`${d.getFullYear()}-${d.getMonth()}`)
+      }
+    }
+  })
+  return Array.from(set)
+    .map(k => {
+      const [y, m] = k.split("-").map(Number)
+      return { year: y, month: m }
+    })
+    .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month)
+}
+
 export default function AdminDashboard() {
   const [shipments, setShipments] = useState<Shipment[]>([])
   const [loadingList, setLoadingList] = useState(true)
+
+  // Filter state: null = all time
+  const [selectedYear, setSelectedYear] = useState<number | null>(null)
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null) // 0-indexed
 
   useEffect(() => {
     fetch("/api/shipments")
       .then(r => r.json())
       .then(data => {
-        setShipments(Array.isArray(data) ? data : [])
+        const arr = Array.isArray(data) ? data : []
+        setShipments(arr)
         setLoadingList(false)
+        // Default to current month if there's data for it
+        const now = new Date()
+        const hasCurrentMonth = arr.some(s => {
+          const date = s.shipmentDate ?? s.estimatedDeliveryDate ?? s.deliveryDate
+          if (!date) return false
+          const d = new Date(date)
+          return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+        })
+        if (hasCurrentMonth) {
+          setSelectedYear(now.getFullYear())
+          setSelectedMonth(now.getMonth())
+        }
       })
   }, [])
 
+  const availableMonths = useMemo(() => getAvailableMonths(shipments), [shipments])
+
+  // Filtered shipments
+  const filtered = useMemo(() => {
+    if (selectedYear === null || selectedMonth === null) return shipments
+    return shipments.filter(s => {
+      const date = s.shipmentDate ?? s.estimatedDeliveryDate ?? s.deliveryDate
+      if (!date) return false
+      const d = new Date(date)
+      return d.getFullYear() === selectedYear && d.getMonth() === selectedMonth
+    })
+  }, [shipments, selectedYear, selectedMonth])
+
   const stats = {
-    total: shipments.length,
-    pending: shipments.filter(s => s.status === "PENDING").length,
-    transit: shipments.filter(s => s.status === "IN_TRANSIT").length,
-    delivered: shipments.filter(s => s.status === "DELIVERED").length,
-    delayed: shipments.filter(s =>
+    total: filtered.length,
+    pending: filtered.filter(s => s.status === "PENDING").length,
+    transit: filtered.filter(s => s.status === "IN_TRANSIT").length,
+    delivered: filtered.filter(s => s.status === "DELIVERED").length,
+    delayed: filtered.filter(s =>
       s.estimatedDeliveryDate &&
       s.deliveryDate &&
       new Date(s.deliveryDate).getTime() > new Date(s.estimatedDeliveryDate).getTime()
     ).length,
   }
 
-  const recentShipments = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date()
-    date.setDate(date.getDate() - (6 - i))
-    const key = date.toISOString().slice(0, 10)
-    return {
-      label: date.toLocaleDateString("es-AR", { weekday: "short" }),
-      count: shipments.filter(s => (s.shipmentDate ?? "").slice(0, 10) === key).length,
+  // Weekly breakdown within the selected month (or last 7 days if all-time)
+  const recentShipments = useMemo(() => {
+    if (selectedYear !== null && selectedMonth !== null) {
+      // Show weeks of the selected month
+      const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate()
+      const weeks: { label: string; count: number }[] = []
+      let weekStart = 1
+      let weekNum = 1
+      while (weekStart <= daysInMonth) {
+        const weekEnd = Math.min(weekStart + 6, daysInMonth)
+        const count = filtered.filter(s => {
+          const date = s.shipmentDate
+          if (!date) return false
+          const d = new Date(date)
+          return d.getFullYear() === selectedYear &&
+            d.getMonth() === selectedMonth &&
+            d.getDate() >= weekStart &&
+            d.getDate() <= weekEnd
+        }).length
+        weeks.push({ label: `Sem ${weekNum}`, count })
+        weekStart += 7
+        weekNum++
+      }
+      return weeks
+    } else {
+      // All-time: last 7 days
+      return Array.from({ length: 7 }, (_, i) => {
+        const date = new Date()
+        date.setDate(date.getDate() - (6 - i))
+        const key = date.toISOString().slice(0, 10)
+        return {
+          label: date.toLocaleDateString("es-AR", { weekday: "short" }),
+          count: shipments.filter(s => (s.shipmentDate ?? "").slice(0, 10) === key).length,
+        }
+      })
     }
-  })
+  }, [filtered, selectedYear, selectedMonth, shipments])
 
   const maxRecent = Math.max(...recentShipments.map(d => d.count), 1)
   const deliveryRate = stats.total ? Math.round((stats.delivered / stats.total) * 100) : 0
 
-  const locationCounts = shipments.reduce<Record<string, number>>((acc, s) => {
+  const locationCounts = filtered.reduce<Record<string, number>>((acc, s) => {
     const parts = s.address.split(",").map(p => p.trim()).filter(Boolean)
     const location = parts[parts.length - 1] || "Desconocido"
     acc[location] = (acc[location] ?? 0) + 1
@@ -79,16 +161,135 @@ export default function AdminDashboard() {
 
   const maxLocation = Math.max(...locationData.map(([, v]) => v), 1)
 
+  const filterLabel =
+    selectedYear !== null && selectedMonth !== null
+      ? `${MONTH_NAMES[selectedMonth]} ${selectedYear}`
+      : "Todos los períodos"
+
   return (
     <div style={{ width: "92%", maxWidth: 1400, margin: "0 auto", padding: "1.5rem 0" }}>
-      <div style={{ fontSize: 18, fontWeight: 500, color: "var(--foreground)", marginBottom: 4 }}>
-        Panel de administración
-      </div>
-      <div style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: "1.5rem" }}>
-        Resumen de métricas, actividad reciente y rendimiento logístico
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: "1.5rem" }}>
+        <div>
+          <div style={{ fontSize: 18, fontWeight: 500, color: "var(--foreground)", marginBottom: 4 }}>
+            Panel de administración
+          </div>
+          <div style={{ fontSize: 13, color: "var(--color-muted)" }}>
+            Resumen de métricas, actividad reciente y rendimiento logístico
+          </div>
+        </div>
+
+        {/* Date filter */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          background: "var(--color-surface)",
+          border: "0.5px solid var(--color-border)",
+          borderRadius: 10,
+          padding: "0.5rem 0.75rem",
+          flexWrap: "wrap",
+        }}>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ color: "var(--color-muted)", flexShrink: 0 }}>
+            <rect x="1" y="3" width="14" height="12" rx="2" stroke="currentColor" strokeWidth="1.3" />
+            <path d="M5 1v4M11 1v4M1 7h14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+          </svg>
+
+          <select
+            value={selectedMonth !== null ? String(selectedMonth) : ""}
+            onChange={e => {
+              const val = e.target.value
+              if (val === "") {
+                setSelectedMonth(null)
+                setSelectedYear(null)
+              } else {
+                setSelectedMonth(Number(val))
+                if (selectedYear === null) {
+                  setSelectedYear(new Date().getFullYear())
+                }
+              }
+            }}
+            style={{
+              fontSize: 13,
+              color: "var(--foreground)",
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              cursor: "pointer",
+              appearance: "none",
+            }}
+          >
+            <option value="">Todos los meses</option>
+            {MONTH_NAMES.map((name, i) => (
+              <option key={i} value={String(i)}>{name}</option>
+            ))}
+          </select>
+
+          <select
+            value={selectedYear !== null ? String(selectedYear) : ""}
+            onChange={e => {
+              const val = e.target.value
+              if (val === "") {
+                setSelectedYear(null)
+                setSelectedMonth(null)
+              } else {
+                setSelectedYear(Number(val))
+                if (selectedMonth === null) {
+                  setSelectedMonth(new Date().getMonth())
+                }
+              }
+            }}
+            style={{
+              fontSize: 13,
+              color: "var(--foreground)",
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              cursor: "pointer",
+              appearance: "none",
+            }}
+          >
+            <option value="">Todos los años</option>
+            {Array.from(new Set(availableMonths.map(m => m.year))).map(y => (
+              <option key={y} value={String(y)}>{y}</option>
+            ))}
+          </select>
+
+          {(selectedYear !== null || selectedMonth !== null) && (
+            <button
+              onClick={() => { setSelectedYear(null); setSelectedMonth(null) }}
+              title="Limpiar filtro"
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--color-muted)",
+                padding: 0,
+                lineHeight: 1,
+                fontSize: 16,
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              ×
+            </button>
+          )}
+
+          <span style={{
+            fontSize: 11,
+            color: "var(--color-muted)",
+            borderLeft: "0.5px solid var(--color-border)",
+            paddingLeft: 8,
+            whiteSpace: "nowrap",
+          }}>
+            {filterLabel}
+          </span>
+        </div>
       </div>
 
-      {/* Stats cards — 2 cols en mobile, 4 en desktop */}
+
+
+      {/* Stats cards */}
       <div className="grid-stats" style={{ display: "grid", gap: 10, marginBottom: 12 }}>
         {[
           { label: "Total", value: stats.total },
@@ -107,16 +308,18 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Charts row — apilados en mobile, side-by-side en desktop */}
+      {/* Charts row */}
       <div className="grid-charts" style={{ display: "grid", gap: 12, marginBottom: 12 }}>
-        {/* Envíos recientes */}
+        {/* Envíos por semana / día */}
         <div style={{
           background: "var(--color-surface)",
           border: "0.5px solid var(--color-border)",
           borderRadius: 12, padding: "1rem",
         }}>
           <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-muted)", marginBottom: 12 }}>
-            Envíos recientes
+            {selectedYear !== null && selectedMonth !== null
+              ? `Envíos por semana — ${MONTH_NAMES[selectedMonth]} ${selectedYear}`
+              : "Envíos recientes (últimos 7 días)"}
           </div>
           <div style={{ display: "flex", alignItems: "end", gap: 8, height: 160 }}>
             {recentShipments.map(day => (
@@ -147,7 +350,7 @@ export default function AdminDashboard() {
             Distribución por estado
           </div>
           {["PENDING", "PREPARING", "IN_TRANSIT", "DELIVERED"].map(status => {
-            const value = shipments.filter(s => s.status === status).length
+            const value = filtered.filter(s => s.status === status).length
             const pct = stats.total ? Math.round((value / stats.total) * 100) : 0
             const c = STATUS_COLORS[status]
             return (
@@ -179,7 +382,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* KPI row — 1 col en mobile, 3 en desktop */}
+      {/* KPI row */}
       <div className="grid-kpi" style={{ display: "grid", gap: 10, marginBottom: 12 }}>
         {[
           { label: "Tasa de entrega", value: `${deliveryRate}%` },
