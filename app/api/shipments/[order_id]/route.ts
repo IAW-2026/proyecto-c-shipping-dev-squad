@@ -20,6 +20,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
   try {
     const { order_id } = await params
     const body = await req.json()
+    
 
     const current = await prisma.shipment.findUnique({
       where: { orderId: parseInt(order_id) },
