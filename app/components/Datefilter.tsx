@@ -45,7 +45,24 @@ export default function DateFilter({
         <path d="M5 1v4M11 1v4M1 7h14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
       </svg>
 
+      <style>{`
+        .df-select {
+          font-size: 13px;
+          color: var(--foreground);
+          background: transparent;
+          border: none;
+          outline: none;
+          cursor: pointer;
+          appearance: none;
+        }
+        .df-select option {
+          background: var(--color-surface);
+          color: var(--foreground);
+        }
+      `}</style>
+
       <select
+        className="df-select"
         value={selectedMonth !== null ? String(selectedMonth) : ""}
         onChange={e => {
           const val = e.target.value
@@ -57,15 +74,6 @@ export default function DateFilter({
             if (selectedYear === null) onYearChange(new Date().getFullYear())
           }
         }}
-        style={{
-          fontSize: 13,
-          color: "var(--foreground)",
-          background: "transparent",
-          border: "none",
-          outline: "none",
-          cursor: "pointer",
-          appearance: "none",
-        }}
       >
         <option value="">Todos los meses</option>
         {MONTH_NAMES.map((name, i) => (
@@ -74,6 +82,7 @@ export default function DateFilter({
       </select>
 
       <select
+        className="df-select"
         value={selectedYear !== null ? String(selectedYear) : ""}
         onChange={e => {
           const val = e.target.value
@@ -84,15 +93,6 @@ export default function DateFilter({
             onYearChange(Number(val))
             if (selectedMonth === null) onMonthChange(new Date().getMonth())
           }
-        }}
-        style={{
-          fontSize: 13,
-          color: "var(--foreground)",
-          background: "transparent",
-          border: "none",
-          outline: "none",
-          cursor: "pointer",
-          appearance: "none",
         }}
       >
         <option value="">Todos los años</option>

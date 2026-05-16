@@ -5,6 +5,7 @@ export type OrderItem = {
   quantity: number
   size: number
   imageUrl: string
+  color?: string | null
 }
 
 export type Shipment = {

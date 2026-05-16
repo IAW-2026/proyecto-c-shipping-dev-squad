@@ -108,13 +108,13 @@ export default function Home() {
             alt="ZapasYA"
             width={180}
             height={40}
-            priority
             style={{
               width: "clamp(280px, 38vw, 450px)",
               height: "auto",
               display: "block",
               objectFit: "contain",
             }}
+            priority
           />
         </div>
           <div style={{ fontSize: 28, fontWeight: 700, color: "var(--foreground)", marginBottom: 8 }}>

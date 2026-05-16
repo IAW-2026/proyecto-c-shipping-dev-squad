@@ -28,7 +28,7 @@ export function ProductList({ items }: Props) {
           <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
               <div style={{ fontSize: 13, fontWeight: 500, color: "var(--foreground)" }}>{p.name}</div>
-              <div style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 2 }}>Talle {p.size} · x{p.quantity}</div>
+              <div style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 2 }}>Talle {p.size}{p.color ? ` · ${p.color}` : ""} · x{p.quantity}</div>
             </div>
             <div style={{ fontSize: 13, fontWeight: 500, color: "var(--foreground)" }}>${p.price.toLocaleString("es-AR")}</div>
           </div>

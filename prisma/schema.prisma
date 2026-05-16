@@ -46,6 +46,7 @@ model OrderItem {
   quantity   Int
   price      Int
   imageUrl   String?
+  color      String?
   shipment   Shipment @relation(fields: [shipmentId], references: [id])
 }
 

@@ -2,32 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react"
 import DateFilter from "../../components/Datefilter"
-
-type Shipment = {
-  id: number
-  orderId: number
-  buyerId: number
-  status: string
-  address: string
-  carrier: string
-  shipmentDate: string | null
-  estimatedDeliveryDate: string | null
-  deliveryDate: string | null
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  PENDING: "Pendiente",
-  PREPARING: "En preparación",
-  IN_TRANSIT: "En camino",
-  DELIVERED: "Entregado",
-}
-
-const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
-  PENDING: { bg: "#faeeda", color: "#854F0B" },
-  PREPARING: { bg: "#f6f0bd", color: "#b5a621" },
-  IN_TRANSIT: { bg: "#dbeafe", color: "#1d4ed8" },
-  DELIVERED: { bg: "#dcfce7", color: "#15803d" },
-}
+import { Shipment, STATUS_LABELS, STATUS_COLORS } from "../../components/shipments"
 
 
 function getAvailableMonths(shipments: Shipment[]): { year: number; month: number }[] {
@@ -124,9 +99,8 @@ export default function AdminDashboard() {
       while (weekStart <= daysInMonth) {
         const weekEnd = Math.min(weekStart + 6, daysInMonth)
         const count = filtered.filter(s => {
-          const date = s.shipmentDate ?? s.estimatedDeliveryDate ?? s.deliveryDate
-          if (!date) return false
-          const d = new Date(date)
+          if (s.status !== "DELIVERED" || !s.deliveryDate) return false
+          const d = new Date(s.deliveryDate)
           return d.getFullYear() === selectedYear &&
             d.getMonth() === selectedMonth &&
             d.getDate() >= weekStart &&
@@ -145,7 +119,7 @@ export default function AdminDashboard() {
         const y = date.getFullYear(); const m = String(date.getMonth() + 1).padStart(2, "0"); const d = String(date.getDate()).padStart(2, "0"); const key = `${y}-${m}-${d}`
         return {
           label: date.toLocaleDateString("es-AR", { weekday: "short" }),
-          count: shipments.filter(s => { const date = s.shipmentDate ?? s.estimatedDeliveryDate ?? s.deliveryDate; return (date ?? "").slice(0, 10) === key; }).length,
+          count: shipments.filter(s => s.status === "DELIVERED" && (s.deliveryDate ?? "").slice(0, 10) === key).length,
         }
       })
     }
@@ -221,8 +195,8 @@ export default function AdminDashboard() {
         }}>
           <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-muted)", marginBottom: 12 }}>
             {selectedYear !== null && selectedMonth !== null
-              ? `Envíos por semana — ${["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][selectedMonth]} ${selectedYear}`
-              : "Envíos recientes (últimos 7 días)"}
+              ? `Entregas por semana — ${["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][selectedMonth]} ${selectedYear}`
+              : "Entregas recientes (últimos 7 días)"}
           </div>
           <div style={{ display: "flex", alignItems: "end", gap: 8, height: 160 }}>
             {recentShipments.map(day => (
@@ -289,7 +263,6 @@ export default function AdminDashboard() {
       <div className="grid-kpi" style={{ display: "grid", gap: 10, marginBottom: 12 }}>
         {[
           { label: "Tasa de entrega", value: `${deliveryRate}%` },
-          { label: "En tránsito", value: stats.transit },
           { label: "Retrasos", value: stats.delayed },
         ].map(k => (
           <div key={k.label} style={{
@@ -348,7 +321,7 @@ export default function AdminDashboard() {
         @media (min-width: 768px) {
           .grid-stats  { grid-template-columns: repeat(4, 1fr); }
           .grid-charts { grid-template-columns: 7fr 5fr; }
-          .grid-kpi    { grid-template-columns: repeat(3, 1fr); }
+          .grid-kpi    { grid-template-columns: repeat(2, 1fr); }
         }
       `}</style>
     </div>

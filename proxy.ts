@@ -32,7 +32,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
 
     if (isDashboardClientRoute(req) && role !== "buyer" && role !== null) {
-        const redirect = role === "admin" ? "/dashboard/admin/pedidos" : "/dashboard/operator"
+        const redirect = role === "admin" ? "/dashboard/admin" : "/dashboard/operator"
         return NextResponse.redirect(new URL(redirect, req.url))
     }
       }
