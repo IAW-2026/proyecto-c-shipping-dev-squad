@@ -33,11 +33,12 @@ export default function Navbar() {
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <Image
-          src={dark ? "/logo-oscuro.png" : "/logo-claro.png"}
-          alt="ZapasYA"
-          width={140}
-          height={40}
-          priority
+           src={dark ? "/logo-oscuro.png" : "/logo-claro.png"}
+           alt="ZapasYA"
+           width={140}
+           height={40}
+           style={{ height: "auto" }}
+           priority
         />
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
