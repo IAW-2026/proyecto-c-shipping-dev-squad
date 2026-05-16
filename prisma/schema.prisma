@@ -14,7 +14,7 @@ datasource db {
 model Shipment {
   id                    Int            @id @default(autoincrement())
   orderId               Int            @unique
-  buyerId               Int
+  buyerId               String
   status                ShipmentStatus @default(PENDING)
   address               String
   shipmentDate          DateTime?

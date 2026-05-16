@@ -14,7 +14,7 @@ const daysAgo = (d: number) => new Date(now.getTime() - d * 24 * 60 * 60 * 1000)
 const SHIPMENTS_SEED = [
   {
     orderId: 1,
-    buyerId: 1,
+    buyerId: "user_3DVNSzm8Sg2CfzaTIjXYgiC2Ttw",
     status: ShipmentStatus.DELIVERED,
     address: "Av. Siempreviva 742, Springfield",
     carrier: CarrierType.MAIL,
@@ -33,7 +33,7 @@ const SHIPMENTS_SEED = [
   },
   {
     orderId: 2,
-    buyerId: 2,
+    buyerId: "user_3DVNSzm8Sg2CfzaTIjXYgiC2Ttw",
     status: ShipmentStatus.IN_TRANSIT,
     address: "Calle Falsa 123, Buenos Aires",
     carrier: CarrierType.MAIL,
@@ -52,7 +52,7 @@ const SHIPMENTS_SEED = [
   },
   {
     orderId: 3,
-    buyerId: 1,
+    buyerId: "user_3DVNSzm8Sg2CfzaTIjXYgiC2Ttw",
     status: ShipmentStatus.PREPARING,
     address: "Av. Corrientes 1234, Buenos Aires",
     carrier: CarrierType.PICKUP,
@@ -69,7 +69,7 @@ const SHIPMENTS_SEED = [
   },
   {
     orderId: 4,
-    buyerId: 3,
+    buyerId: "user_3DVNSzm8Sg2CfzaTIjXYgiC2Ttw",
     status: ShipmentStatus.PENDING,
     address: "San Martín 456, Rosario",
     carrier: CarrierType.MAIL,

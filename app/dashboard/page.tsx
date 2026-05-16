@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from "react"
+import { useUser } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
 
 type Shipment = {
   id: number
@@ -45,16 +47,28 @@ export default function ClientDashboard() {
   const [tracking, setTracking] = useState<TrackingItem[]>([])
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState("TODOS")
+  const { user } = useUser()
+  const router = useRouter()
+
+   useEffect(() => {
+    if (!user) return 
+    const role = user.publicMetadata?.role as string
+    if (role === "admin") router.push("/dashboard/admin/pedidos")
+    else if (role === "logistics_operator") router.push("/dashboard/operator")
+  }, [user])
 
   useEffect(() => {
-    fetch("/api/shipments?buyer_id=1")
+    if (!user) return
+    fetch(`/api/shipments?buyer_id=${user?.id}`)
       .then(r => r.json())
       .then(data => {
-        setShipments(data)
+        setShipments(Array.isArray(data) ? data : [])
         setLoading(false)
       })
-  }, [])
+  }, [user])
 
+  if (!user) return <div>Cargando...</div>
+  
   function selectShipment(s: Shipment) {
     setSelected(s)
     fetch(`/api/shipments/${s.orderId}/tracking`)
@@ -71,7 +85,7 @@ export default function ClientDashboard() {
   }
 
   if (selected) {
-   const items = selected.items ?? []
+    const items = selected.items ?? []
     const sc = STATUS_COLORS[selected.status]
     const total = items.reduce((sum, p) => sum + p.price * p.quantity, 0)
 

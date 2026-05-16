@@ -28,13 +28,15 @@ export async function GET(req: NextRequest) {
     const buyerId = req.nextUrl.searchParams.get("buyer_id")
     
     const shipments = await prisma.shipment.findMany({
-      where: buyerId ? { buyerId: parseInt(buyerId) } : undefined,
+      where: buyerId ? { buyerId } : undefined,
       orderBy: { createdAt: "desc" },
       include: { items: true },  // ← agregá esto
     })
     
     return NextResponse.json(shipments)
-  } catch (error) {
-    return NextResponse.json({ error: "Error al obtener los envíos" }, { status: 500 })
-  }
+  }catch (error) {
+  console.error("Error:", error)
+  return NextResponse.json({ error: "Error al obtener los envíos" }, { status: 500 })
+}
+  
 }
