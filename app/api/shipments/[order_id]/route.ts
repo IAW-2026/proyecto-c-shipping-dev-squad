@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+const ORDER = ["PENDING", "PREPARING", "IN_TRANSIT", "DELIVERED"]
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ order_id: string }> }) {
   try {
     const { order_id } = await params;
@@ -12,6 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
     }
     return NextResponse.json(shipment);
   } catch (error) {
+    console.error("Error al obtener el envío:", error)
     return NextResponse.json({ error: "Error al obtener el envío" }, { status: 500 });
   }
 }
@@ -20,7 +23,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
   try {
     const { order_id } = await params
     const body = await req.json()
-    
+
+    if (body.status && !ORDER.includes(body.status)) {
+      return NextResponse.json({ error: "Estado inválido" }, { status: 400 })
+    }
 
     const current = await prisma.shipment.findUnique({
       where: { orderId: parseInt(order_id) },
@@ -30,9 +36,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
       return NextResponse.json({ error: "Envío no encontrado" }, { status: 404 })
     }
 
-    const ORDER = ["PENDING", "PREPARING", "IN_TRANSIT", "DELIVERED"]
-    
-    // Si manda un status, validar que sea mayor al actual
     if (body.status && ORDER.indexOf(body.status) < ORDER.indexOf(current.status)) {
       return NextResponse.json({ error: "No podés retroceder el estado de un envío" }, { status: 400 })
     }
@@ -56,6 +59,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
 
     return NextResponse.json(shipment)
   } catch (error) {
+    console.error("Error al actualizar el envío:", error)
     return NextResponse.json({ error: "Error al actualizar el envío" }, { status: 500 })
   }
 }

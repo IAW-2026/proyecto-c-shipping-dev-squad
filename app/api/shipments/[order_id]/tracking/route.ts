@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ order_id: string } > }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ order_id: string }> }) {
   try {
-    const {order_id} = await params;
+    const { order_id } = await params;
     const shipment = await prisma.shipment.findUnique({
       where: { orderId: parseInt(order_id) },
     });
@@ -16,6 +16,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
     });
     return NextResponse.json(tracking);
   } catch (error) {
+    console.error("Error al obtener el tracking:", error)
     return NextResponse.json({ error: "Error al obtener el tracking" }, { status: 500 });
   }
 }
@@ -24,6 +25,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ord
   try {
     const { order_id } = await params
     const body = await req.json()
+
+    if (!body.description?.trim()) {
+      return NextResponse.json({ error: "La descripción es obligatoria" }, { status: 400 })
+    }
+
     const shipment = await prisma.shipment.findUnique({
       where: { orderId: parseInt(order_id) },
     })
@@ -40,6 +46,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ord
     })
     return NextResponse.json(tracking, { status: 201 })
   } catch (error) {
+    console.error("Error al crear tracking:", error)
     return NextResponse.json({ error: "Error al crear tracking" }, { status: 500 })
   }
 }

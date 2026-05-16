@@ -8,6 +8,7 @@ const isPublicApiRoute = createRouteMatcher([
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
 const isAdminRoute = createRouteMatcher(["/dashboard/admin(.*)"]);
 const isOperatorRoute = createRouteMatcher(["/dashboard/operator(.*)"]);
+const isDashboardClientRoute = createRouteMatcher(["/dashboard"])
 
 export default clerkMiddleware(async (auth, req) => {
   if (isPublicApiRoute(req)) return;
@@ -19,17 +20,22 @@ export default clerkMiddleware(async (auth, req) => {
     const role = (sessionClaims?.metadata as any)?.role
               ?? (sessionClaims?.publicMetadata as any)?.role
               ?? (sessionClaims as any)?.role
-              ?? process.env.NEXT_PUBLIC_DEV_ROLE //linea de hardcodeo para testing, eliminar en producción
               ?? null;
 
     if (isAdminRoute(req) && role !== "admin") {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
+      const redirect = role === "logistics_operator" ? "/dashboard/operator" : "/dashboard"
+      return NextResponse.redirect(new URL(redirect, req.url))
     }
 
     if (isOperatorRoute(req) && role !== "logistics_operator" && role !== "admin") {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
+      return NextResponse.redirect(new URL("/dashboard", req.url))
     }
-  }
+
+    if (isDashboardClientRoute(req) && role !== "buyer" && role !== null) {
+        const redirect = role === "admin" ? "/dashboard/admin/pedidos" : "/dashboard/operator"
+        return NextResponse.redirect(new URL(redirect, req.url))
+    }
+      }
 });
 
 export const config = {
