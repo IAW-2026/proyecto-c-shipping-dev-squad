@@ -30,6 +30,7 @@ export async function GET(req: NextRequest) {
     const shipments = await prisma.shipment.findMany({
       where: buyerId ? { buyerId: parseInt(buyerId) } : undefined,
       orderBy: { createdAt: "desc" },
+      include: { items: true },  // ← agregá esto
     })
     
     return NextResponse.json(shipments)

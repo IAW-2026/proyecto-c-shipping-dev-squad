@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import { mockOrderItems } from "@/lib/mockProducts"
 
 type Shipment = {
   id: number
@@ -13,6 +12,7 @@ type Shipment = {
   shipmentDate: string | null
   estimatedDeliveryDate: string | null
   deliveryDate: string | null
+  items: { name: string; price: number; quantity: number; size: number; imageUrl: string }[]
 }
 
 type TrackingItem = {
@@ -38,8 +38,6 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
 }
 
 const STEPS = ["PENDING", "PREPARING", "IN_TRANSIT", "DELIVERED"]
-const DEFAULT_DESCRIPTIONS = ["Envío registrado", "Preparando el paquete", "El paquete está en camino", "Entregado al destinatario"]
-
 
 export default function ClientDashboard() {
   const [shipments, setShipments] = useState<Shipment[]>([])
@@ -73,9 +71,9 @@ export default function ClientDashboard() {
   }
 
   if (selected) {
-    const products = mockOrderItems[selected.orderId] ?? []
+   const items = selected.items ?? []
     const sc = STATUS_COLORS[selected.status]
-    const total = products.reduce((sum, p) => sum + p.price * p.quantity, 0)
+    const total = items.reduce((sum, p) => sum + p.price * p.quantity, 0)
 
     return (
       <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
@@ -154,7 +152,6 @@ export default function ClientDashboard() {
                 if (timeDiff !== 0) return timeDiff
                 return STEPS.indexOf(b.status) - STEPS.indexOf(a.status)
               }).map(t => {
-                const isNovedad = t.description && !DEFAULT_DESCRIPTIONS.includes(t.description)
                 const statusStyle = STATUS_COLORS[t.status] ?? {bg: "#f3f4f6",color: "#6b7280",}
                 return (
                   <div key={t.id} style={{
@@ -202,14 +199,14 @@ export default function ClientDashboard() {
           {/* DERECHA — Productos */}
           <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 12, padding: "1.25rem" }}>
             <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-muted)", marginBottom: 12 }}>Productos</div>
-            {products.map((p, i) => (
+            {items.map((p, i) => (
               <div key={i} style={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 gap: 10,
                 padding: "12px 0",
-                borderBottom: i < products.length - 1 ? "0.5px solid var(--color-border)" : "none"
+                borderBottom: i < items.length - 1 ? "0.5px solid var(--color-border)" : "none"
               }}>
                 <div style={{
                   width: "100%",
@@ -219,12 +216,14 @@ export default function ClientDashboard() {
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 56,
                 }}>
-                  {p.image}
+                  {p.imageUrl
+                    ? <img src={p.imageUrl} alt={p.name} style={{ width: 90, height: 90, objectFit: "contain" }} />
+                    : "👟"}
                 </div>
                 <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 500, color: "var(--foreground)" }}>{p.name}</div>
-                    <div style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 2 }}>{p.brand} · Talle {p.size} · x{p.quantity}</div>
+                    <div style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 2 }}> Talle {p.size} · x{p.quantity}</div>
                   </div>
                   <div style={{ fontSize: 13, fontWeight: 500, color: "var(--foreground)" }}>${p.price.toLocaleString("es-AR")}</div>
                 </div>
@@ -293,8 +292,7 @@ export default function ClientDashboard() {
           shipments
           .filter(s => filtro === "TODOS" || s.status === filtro)
           .map(s => {
-            const products = mockOrderItems[s.orderId] ?? []
-            const main = products[0]
+            const main = s.items?.[0]
             const sc = STATUS_COLORS[s.status]
             return (
               <div key={s.id} onClick={() => selectShipment(s)} style={{
@@ -312,15 +310,17 @@ export default function ClientDashboard() {
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 48, flexShrink: 0,
                 }}>
-                  {main?.image ?? "👟"}
+                  {main?.imageUrl
+                    ? <img src={main.imageUrl} alt={main.name} style={{ width: 64, height: 64, objectFit: "contain" }} />
+                    : "👟"}
                 </div>
                 <div style={{ padding: "0.875rem", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                   <div>
                     <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>Orden #{s.orderId}</div>
                     <div style={{ fontSize: 15, fontWeight: 500, color: "var(--foreground)", marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"  }}>{main?.name ?? "Producto"}</div>
                     <div style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 10, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"  }}>
-                      {main?.brand} · Talle {main?.size}
-                      {products.length > 1 && ` · +${products.length - 1} más`}
+                      Talle {main?.size}
+                      {s.items?.length > 1 && ` · +${s.items.length - 1} más`}
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap"  }}>

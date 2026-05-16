@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import { mockOrderItems } from "@/lib/mockProducts"
 
 type Shipment = {
   id: number
@@ -11,6 +10,7 @@ type Shipment = {
   address: string
   carrier: string
   estimatedDeliveryDate: string | null
+  items: { name: string; price: number; quantity: number; size: number; imageUrl: string }[]
 }
 
 type TrackingItem = {
@@ -109,8 +109,8 @@ export default function OperatorDashboard() {
 
   if (selected) {
     const sc = STATUS_COLORS[selected.status]
-    const products = mockOrderItems[selected.orderId] ?? []
-
+    const items = selected.items ?? []
+    const main = items[0]  
     return (
       <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
         <div onClick={() => setSelected(null)} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>
@@ -119,11 +119,13 @@ export default function OperatorDashboard() {
 
         <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 16, overflow: "hidden", marginBottom: 12, display: "flex" }}>
           <div style={{ width: 120, minHeight: 120, background: "var(--color-surface-alt)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 52, flexShrink: 0 }}>
-            {products[0]?.image ?? "👟"}
+            {main?.imageUrl
+                    ? <img src={main.imageUrl} alt={main.name} style={{ width: 80, height: 80, objectFit: "contain" }} />
+                    : "👟"}
           </div>
           <div style={{ padding: "1rem 1.25rem", flex: 1 }}>
             <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>Orden #{selected.orderId}</div>
-            <div style={{ fontSize: 20, fontWeight: 500, color: "var(--foreground)", marginBottom: 4 }}>{products[0]?.name ?? "Producto"}</div>
+            <div style={{ fontSize: 20, fontWeight: 500, color: "var(--foreground)", marginBottom: 4 }}>{items[0]?.name ?? "Producto"}</div>
             <div style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: 10 }}>{selected.address} · {selected.carrier === "MAIL" ? "Correo" : "Retiro"}</div>
             <span style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, fontSize: 12, fontWeight: 500, background: sc.bg, color: sc.color }}>
               {STATUS_LABELS[selected.status]}
@@ -245,8 +247,7 @@ export default function OperatorDashboard() {
           shipments
           .filter(s => filtro === "TODOS" || s.status === filtro)
           .map(s => {
-            const products = mockOrderItems[s.orderId] ?? []
-            const main = products[0]
+            const main = s.items?.[0]
             const sc = STATUS_COLORS[s.status]
             return (
               <div key={s.id} onClick={() => selectShipment(s)} style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 16, overflow: "hidden", display: "flex", cursor: "pointer" }}
@@ -254,7 +255,9 @@ export default function OperatorDashboard() {
                 onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
               >
                 <div style={{ width: 100, minHeight: 100, background: "var(--color-surface-alt)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 42, flexShrink: 0 }}>
-                  {main?.image ?? "👟"}
+                  {main?.imageUrl
+                    ? <img src={main.imageUrl} alt={main.name} style={{ width: 64, height: 64, objectFit: "contain" }} />
+                    : "👟"}
                 </div>
                 <div style={{ padding: "1rem 1.25rem", flex: 1 }}>
                   <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>Orden #{s.orderId}</div>

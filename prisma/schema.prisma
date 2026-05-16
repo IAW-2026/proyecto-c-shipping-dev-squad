@@ -25,6 +25,7 @@ model Shipment {
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
   tracking              Tracking[]
+  items                 OrderItem[]
 }
 
 model Tracking {
@@ -35,6 +36,17 @@ model Tracking {
   description String?
   timestamp   DateTime       @default(now())
   shipment    Shipment       @relation(fields: [shipmentId], references: [id])
+}
+
+model OrderItem {
+  id         Int      @id @default(autoincrement())
+  shipmentId Int
+  name       String
+  size       Int
+  quantity   Int
+  price      Int
+  imageUrl   String?
+  shipment   Shipment @relation(fields: [shipmentId], references: [id])
 }
 
 enum ShipmentStatus {

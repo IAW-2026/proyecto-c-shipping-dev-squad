@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import { mockOrderItems } from "@/lib/mockProducts"
 
 type Shipment = {
   id: number
@@ -13,6 +12,7 @@ type Shipment = {
   shipmentDate: string | null
   estimatedDeliveryDate: string | null
   deliveryDate: string | null
+  items: { name: string; price: number; quantity: number; size: number; imageUrl: string }[]
 }
 
 type TrackingItem = {
@@ -121,9 +121,10 @@ export default function AdminPedidos() {
   }
 
   if (selected) {
-    const products = mockOrderItems[selected.orderId] ?? []
+    const items = selected.items ?? []
     const sc = STATUS_COLORS[selected.status]
-    const total = products.reduce((sum, p) => sum + p.price * p.quantity, 0)
+    const main = items[0]
+    const total = items.reduce((sum, p) => sum + p.price * p.quantity, 0)
 
     if (editando) {
       return (
@@ -324,19 +325,21 @@ export default function AdminPedidos() {
 
           <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 12, padding: "1.25rem" }}>
             <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-muted)", marginBottom: 12 }}>Productos</div>
-            {products.map((p, i) => (
+            {items.map((p, i) => (
               <div key={i} style={{
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
                 padding: "12px 0",
-                borderBottom: i < products.length - 1 ? "0.5px solid var(--color-border)" : "none"
+                borderBottom: i < items.length - 1 ? "0.5px solid var(--color-border)" : "none"
               }}>
                 <div style={{ width: "100%", height: 120, borderRadius: 10, background: "var(--color-surface-alt)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 56 }}>
-                  {p.image}
+                  {main?.imageUrl
+                  ? <img src={main.imageUrl} alt={main.name} style={{ width: 64, height: 64, objectFit: "contain" }} />
+                  : "👟"}
                 </div>
                 <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 500, color: "var(--foreground)" }}>{p.name}</div>
-                    <div style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 2 }}>{p.brand} · Talle {p.size} · x{p.quantity}</div>
+                    <div style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 2 }}> Talle {p.size} · x{p.quantity}</div>
                   </div>
                   <div style={{ fontSize: 13, fontWeight: 500, color: "var(--foreground)" }}>${p.price.toLocaleString("es-AR")}</div>
                 </div>
@@ -402,8 +405,7 @@ export default function AdminPedidos() {
           shipments
             .filter(s => filtro === "TODOS" || s.status === filtro)
             .map(s => {
-              const products = mockOrderItems[s.orderId] ?? []
-              const main = products[0]
+              const main = s.items?.[0]
               const sc = STATUS_COLORS[s.status]
               return (
                 <div key={s.id} onClick={() => selectShipment(s)} style={{
@@ -416,7 +418,9 @@ export default function AdminPedidos() {
                   onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
                 >
                   <div style={{ width: 100, minWidth: 100, background: "var(--color-surface-alt)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, flexShrink: 0 }}>
-                    {main?.image ?? "👟"}
+                    {main?.imageUrl
+                    ? <img src={main.imageUrl} alt={main.name} style={{ width: 64, height: 64, objectFit: "contain" }} />
+                    : "👟"}
                   </div>
                   <div style={{ padding: "0.875rem 1rem", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", minWidth: 0 }}>
                     <div>
