@@ -44,6 +44,7 @@ export default function Navbar() {
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
         <button
           onClick={() => setDark(d => !d)}
+          aria-label={dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
           style={{
             background: dark ? "#27272a" : "#f3f4f6",
             border: "none", borderRadius: 8,
