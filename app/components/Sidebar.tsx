@@ -61,7 +61,10 @@ export default function AdminSidebar() {
           transition: "transform 0.25s ease",
           boxShadow: open ? "4px 0 24px rgba(0,0,0,0.12)" : "none",
         } : {
-          position: "relative",
+          position: "sticky",
+          top: 56,
+          height: "calc(100vh - 56px)",
+          overflowY: "auto",
         }),
       }}>
         <div style={{
