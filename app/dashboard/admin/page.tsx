@@ -58,18 +58,21 @@ export default function AdminDashboard() {
 
   // Filtered shipments
   const filtered = useMemo(() => {
+    const getDate = (s: Shipment) =>
+      s.deliveryDate ?? s.shipmentDate ?? s.estimatedDeliveryDate
+
     if (selectedYear === null || selectedMonth === null) {
       const sevenDaysAgo = new Date()
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
       sevenDaysAgo.setHours(0, 0, 0, 0)
       return shipments.filter(s => {
-        const date = s.shipmentDate ?? s.estimatedDeliveryDate ?? s.deliveryDate
+        const date = getDate(s)
         if (!date) return false
         return new Date(date) >= sevenDaysAgo
       })
     }
     return shipments.filter(s => {
-      const date = s.shipmentDate ?? s.estimatedDeliveryDate ?? s.deliveryDate
+      const date = getDate(s)
       if (!date) return false
       const d = new Date(date)
       return d.getFullYear() === selectedYear && d.getMonth() === selectedMonth

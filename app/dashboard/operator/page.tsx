@@ -42,14 +42,14 @@ export default function OperatorDashboard() {
       setMensaje({ texto: "Agregá una descripción antes de actualizar el estado", tipo: "error" })
       return
     }
-    const updatedTracking = await fetch(`/api/shipments/${selected.orderId}/tracking`).then(r => r.json())
-    setTracking([...updatedTracking].reverse())
     setLoading(true)
     await fetch(`/api/shipments/${selected.orderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: newStatus, description }),
     })
+    const updatedTracking = await fetch(`/api/shipments/${selected.orderId}/tracking`).then(r => r.json())
+    setTracking([...updatedTracking].reverse())
     setSelected({ ...selected, status: newStatus })
     setShipments(prev => prev.map(s => s.orderId === selected.orderId ? { ...s, status: newStatus } : s))
     setDescription("")

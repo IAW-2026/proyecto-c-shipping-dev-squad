@@ -35,7 +35,7 @@ export default function AdminPedidos() {
     setEditando(false)
     fetch(`/api/shipments/${s.orderId}/tracking`)
       .then(r => r.json())
-      .then(setTracking)
+      .then(data => setTracking([...data].reverse()))
   }
 
   async function updateStatus() {

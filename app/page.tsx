@@ -106,13 +106,12 @@ export default function Home() {
           <Image
             src={dark ? "/logo-oscuro.png" : "/logo-claro.png"}
             alt="ZapasYA"
-            width={180}
-            height={40}
+            width={450}
+            height={100}
             style={{
               width: "clamp(280px, 38vw, 450px)",
               height: "auto",
               display: "block",
-              objectFit: "contain",
             }}
             priority
           />

@@ -1,4 +1,4 @@
-import { TrackingItem, STATUS_LABELS, STATUS_COLORS, DEFAULT_DESCRIPTIONS } from "./types"
+import { TrackingItem, STATUS_LABELS, STATUS_COLORS } from "./types"
 
 type Props = {
   tracking: TrackingItem[]
@@ -28,7 +28,6 @@ export function TrackingHistory({ tracking, simple = false }: Props) {
         const STEPS = ["PENDING", "PREPARING", "IN_TRANSIT", "DELIVERED"]
         return STEPS.indexOf(b.status) - STEPS.indexOf(a.status)
       }).map(t => {
-        const isNovedad = t.description && !DEFAULT_DESCRIPTIONS.includes(t.description)
         const statusStyle = STATUS_COLORS[t.status] ?? { bg: "#f3f4f6", color: "#6b7280" }
         return (
           <div key={t.id} style={{
@@ -36,15 +35,15 @@ export function TrackingHistory({ tracking, simple = false }: Props) {
             marginBottom: 6,
             borderRadius: 8,
             background: "var(--color-surface-alt)",
-            border: isNovedad ? "0.5px solid #f59e0b" : "0.5px solid var(--color-border)",
+            border: "0.5px solid var(--color-border)",
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
               <span style={{
                 fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 99,
-                background: isNovedad ? "#fef3c7" : statusStyle.bg,
-                color: isNovedad ? "#92400e" : statusStyle.color,
+                background: statusStyle.bg,
+                color: statusStyle.color,
               }}>
-                {isNovedad ? "NOVEDAD" : STATUS_LABELS[t.status] ?? t.status}
+                {STATUS_LABELS[t.status] ?? t.status}
               </span>
               <span style={{ fontSize: 10, color: "var(--color-muted)" }}>
                 {new Date(t.timestamp).toLocaleDateString("es-AR", {
@@ -54,7 +53,7 @@ export function TrackingHistory({ tracking, simple = false }: Props) {
               </span>
             </div>
             <div style={{ fontSize: 12, color: "var(--foreground)" }}>
-              {isNovedad ? "📝 " : "📦 "}{t.description ?? t.location}
+              📦 {t.description ?? t.location}
             </div>
           </div>
         )
