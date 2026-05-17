@@ -6,6 +6,7 @@ import {
   ShipmentCard, ShipmentFilters, StatusBadge,
   TrackingHistory, ShipmentStepper
 } from "../../components/shipments"
+import { Pagination } from "../../components/Pagination"
 
 export default function OperatorDashboard() {
   const [shipments, setShipments] = useState<Shipment[]>([])
@@ -18,6 +19,9 @@ export default function OperatorDashboard() {
   const [loadingList, setLoadingList] = useState(true)
   const [mensaje, setMensaje] = useState<{ texto: string; tipo: "error" | "success" } | null>(null)
   const [filtro, setFiltro] = useState("TODOS")
+  const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 10
 
   useEffect(() => {
     fetch("/api/shipments")
@@ -167,28 +171,53 @@ export default function OperatorDashboard() {
       <div style={{ fontSize: 18, fontWeight: 500, color: "var(--foreground)", marginBottom: 4 }}>Gestión de envíos</div>
       <div style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: "1.5rem" }}>Actualizá estados y registrá novedades</div>
 
-      <ShipmentFilters filtro={filtro} onChange={setFiltro} />
+      <input
+        value={search}
+        onChange={e => { setSearch(e.target.value); setPage(1) }}
+        placeholder="Buscar por número de orden..."
+        style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "0.5px solid var(--color-border)", fontSize: 13, background: "var(--color-surface)", color: "var(--foreground)", marginBottom: 12 }}
+      />
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {loadingList ? (
-          <div style={{ padding: "2rem", textAlign: "center", fontSize: 14, color: "var(--color-muted)" }}>
-            Cargando envíos...
-          </div>
-        ) : shipments.filter(s => filtro === "TODOS" || s.status === filtro).length === 0 ? (
-          <div style={{
-            padding: "2rem", textAlign: "center",
-            background: "var(--color-surface)",
-            border: "0.5px solid var(--color-border)",
-            borderRadius: 12, fontSize: 14, color: "var(--color-muted)",
-          }}>
-            📦 {filtro === "TODOS" ? "No hay envíos registrados" : `No hay envíos en ese estado`}
-          </div>
-        ) : (
-          shipments
-            .filter(s => filtro === "TODOS" || s.status === filtro)
-            .map(s => <ShipmentCard key={s.id} shipment={s} onClick={selectShipment} />)
-        )}
-      </div>
+      <ShipmentFilters filtro={filtro} onChange={f => { setFiltro(f); setPage(1) }} />
+
+      {(() => {
+        const filtered = shipments
+          .filter(s => filtro === "TODOS" || s.status === filtro)
+          .filter(s => search.trim() === "" || String(s.orderId).includes(search.trim()))
+        const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+        const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+        return (
+          <>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {loadingList ? (
+                <div style={{ padding: "2rem", textAlign: "center", fontSize: 14, color: "var(--color-muted)" }}>
+                  Cargando envíos...
+                </div>
+              ) : paginated.length === 0 ? (
+                <div style={{
+                  padding: "2rem", textAlign: "center",
+                  background: "var(--color-surface)",
+                  border: "0.5px solid var(--color-border)",
+                  borderRadius: 12, fontSize: 14, color: "var(--color-muted)",
+                }}>
+                  📦 {search ? `No hay envíos con orden #${search}` : filtro === "TODOS" ? "No hay envíos registrados" : "No hay envíos en ese estado"}
+                </div>
+              ) : (
+                paginated.map(s => <ShipmentCard key={s.id} shipment={s} onClick={selectShipment} />)
+              )}
+            </div>
+            {!loadingList && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
+                <span style={{ fontSize: 12, color: "var(--color-muted)" }}>
+                  {filtered.length} envío{filtered.length !== 1 ? "s" : ""}
+                </span>
+                <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+              </div>
+            )}
+          </>
+        )
+      })()}
     </div>
   )
 }
