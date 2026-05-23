@@ -22,6 +22,9 @@ model Shipment {
   deliveryDate          DateTime?
   lastStatusTimestamp   DateTime       @default(now())
   carrier               CarrierType
+  shippingCost          Int?
+  originCity            String?
+  originProvince        String?
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
   tracking              Tracking[]

@@ -177,9 +177,8 @@ export default function AdminPedidos() {
             <TrackingHistory tracking={tracking} />
             <ShipmentInfo shipment={selected} />
           </div>
-
-          <ProductList items={items} />
-        </div>
+            <ProductList items={items} shippingCost={selected.shippingCost} />        
+          </div>
 
         <style>{`
           @media (min-width: 640px) {

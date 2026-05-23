@@ -97,23 +97,20 @@ export default function Home() {
         <div
           style={{
             marginBottom: -50,
-            marginLeft: "-1.5 rem",
-
+            marginLeft: "-1.5rem",
             width: "fit-content",
             lineHeight: 0,
           }}
         >
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={dark ? "/logo-oscuro.png" : "/logo-claro.png"}
             alt="ZapasYA"
-            width={450}
-            height={100}
             style={{
               width: "clamp(280px, 38vw, 450px)",
               height: "auto",
               display: "block",
             }}
-            priority
           />
         </div>
           <div style={{ fontSize: 28, fontWeight: 700, color: "var(--foreground)", marginBottom: 8 }}>

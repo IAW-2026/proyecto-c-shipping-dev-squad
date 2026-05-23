@@ -37,7 +37,6 @@ export default function Navbar() {
            alt="ZapasYA"
            width={140}
            height={40}
-           style={{ width: 140, height: "auto" }}
            priority
         />
       </div>
@@ -57,4 +56,4 @@ export default function Navbar() {
       </div>
     </nav>
   )
-}
+} 

@@ -7,6 +7,7 @@ type Props = {
 export function ShipmentInfo({ shipment }: Props) {
   const rows = [
     ["Dirección", shipment.address],
+    ["Origen", shipment.originCity && shipment.originProvince ? `${shipment.originCity}, ${shipment.originProvince}` : "—"],
     ["Carrier", shipment.carrier === "MAIL" ? "Correo" : "Retiro en persona"],
     ["Entrega estimada", shipment.estimatedDeliveryDate ? new Date(shipment.estimatedDeliveryDate).toLocaleDateString("es-AR") : "—"],
     ["Fecha de entrega", shipment.deliveryDate ? new Date(shipment.deliveryDate).toLocaleDateString("es-AR") : "—"],
