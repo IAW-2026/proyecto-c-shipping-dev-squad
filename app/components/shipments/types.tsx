@@ -4,7 +4,7 @@ export type OrderItem = {
   price: number
   quantity: number
   size: number
-  imageUrl: string
+  imageUrl: string | null
   color?: string | null
 }
 
