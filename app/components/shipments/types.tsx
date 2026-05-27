@@ -6,6 +6,7 @@ export type OrderItem = {
   size: number
   imageUrl: string | null
   color?: string | null
+  productOriginAddress?: string | null
 }
 
 export type Shipment = {
@@ -19,8 +20,6 @@ export type Shipment = {
   estimatedDeliveryDate: string | null
   deliveryDate?: string | null
   shippingCost?: number | null
-  originCity?: string | null
-  originProvince?: string | null
   items: OrderItem[]
 }
 

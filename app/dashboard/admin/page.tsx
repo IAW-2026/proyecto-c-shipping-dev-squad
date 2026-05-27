@@ -25,8 +25,6 @@ export default async function AdminDashboardPage() {
         estimatedDeliveryDate: s.estimatedDeliveryDate?.toISOString() ?? null,
         deliveryDate: s.deliveryDate?.toISOString() ?? null,
         shippingCost: s.shippingCost ?? null,
-        originCity: s.originCity ?? null,
-        originProvince: s.originProvince ?? null,
         items: [],
       }))}
     />

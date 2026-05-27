@@ -25,8 +25,6 @@ export default async function AdminPedidosPage() {
         estimatedDeliveryDate: s.estimatedDeliveryDate?.toISOString() ?? null,
         deliveryDate: s.deliveryDate?.toISOString() ?? null,
         shippingCost: s.shippingCost ?? null,
-        originCity: s.originCity ?? null,
-        originProvince: s.originProvince ?? null,
         items: s.items.map(i => ({
           id: i.id,
           name: i.name,
@@ -35,6 +33,7 @@ export default async function AdminPedidosPage() {
           size: i.size,
           color: i.color ?? null,
           imageUrl: i.imageUrl,
+          productOriginAddress: i.productOriginAddress ?? null,
         })),
       }))}
     />
