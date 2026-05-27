@@ -23,8 +23,6 @@ model Shipment {
   lastStatusTimestamp   DateTime       @default(now())
   carrier               CarrierType
   shippingCost          Int?
-  originCity            String?
-  originProvince        String?
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
   tracking              Tracking[]
@@ -50,6 +48,7 @@ model OrderItem {
   price      Int
   imageUrl   String?
   color      String?
+  productOriginAddress String?
   shipment   Shipment @relation(fields: [shipmentId], references: [id])
 }
 

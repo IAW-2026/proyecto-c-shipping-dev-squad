@@ -19,8 +19,6 @@ const SHIPMENTS_SEED = [
     address: "Av. Siempreviva 742, Springfield",
     carrier: CarrierType.MAIL,
     shippingCost: 3500,
-    originCity: "Buenos Aires",
-    originProvince: "Buenos Aires",
     shipmentDate: daysAgo(30),
     estimatedDeliveryDate: daysAgo(15),
     deliveryDate: daysAgo(16),
@@ -31,7 +29,7 @@ const SHIPMENTS_SEED = [
       { location: "Springfield", status: ShipmentStatus.DELIVERED, description: "Entregado al destinatario" },
     ],
     items: [
-      { name: "Nike Air Max 90", size: 42, quantity: 1, price: 89999, imageUrl: "https://placehold.co/200x200?text=Air+Max+90", color: "Blanco" },
+      { name: "Nike Air Max 90", size: 42, quantity: 1, price: 89999, imageUrl: "https://placehold.co/200x200?text=Air+Max+90", color: "Blanco", productOriginAddress: "Buenos Aires, Argentina" },
     ],
   },
   {
@@ -41,8 +39,6 @@ const SHIPMENTS_SEED = [
     address: "Calle Falsa 123, Buenos Aires",
     carrier: CarrierType.MAIL,
     shippingCost: 4200,
-    originCity: "Córdoba",
-    originProvince: "Córdoba",
     shipmentDate: daysAgo(5),
     estimatedDeliveryDate: days(10),
     deliveryDate: null,
@@ -52,8 +48,8 @@ const SHIPMENTS_SEED = [
       { location: "En camino - Autopista Panamericana", status: ShipmentStatus.IN_TRANSIT, description: "El paquete está en camino" },
     ],
     items: [
-      { name: "Adidas Superstar", size: 41, quantity: 1, price: 74999, imageUrl: "https://placehold.co/200x200?text=Superstar", color: "Blanco/Negro" },
-      { name: "Adidas Stan Smith", size: 41, quantity: 1, price: 64999, imageUrl: "https://placehold.co/200x200?text=Stan+Smith", color: "Blanco/Verde" },
+      { name: "Adidas Superstar", size: 41, quantity: 1, price: 74999, imageUrl: "https://placehold.co/200x200?text=Superstar", color: "Blanco/Negro", productOriginAddress: "Córdoba, Argentina" },
+      { name: "Adidas Stan Smith", size: 41, quantity: 1, price: 64999, imageUrl: "https://placehold.co/200x200?text=Stan+Smith", color: "Blanco/Verde", productOriginAddress: "Córdoba, Argentina" },
     ],
   },
   {
@@ -63,8 +59,6 @@ const SHIPMENTS_SEED = [
     address: "Av. Corrientes 1234, Buenos Aires",
     carrier: CarrierType.PICKUP,
     shippingCost: 0,
-    originCity: "Buenos Aires",
-    originProvince: "Buenos Aires",
     shipmentDate: daysAgo(2),
     estimatedDeliveryDate: days(13),
     deliveryDate: null,
@@ -73,7 +67,7 @@ const SHIPMENTS_SEED = [
       { location: "Centro de distribución Buenos Aires", status: ShipmentStatus.PREPARING, description: "Preparando el paquete" },
     ],
     items: [
-      { name: "New Balance 574", size: 43, quantity: 2, price: 54999, imageUrl: "https://placehold.co/200x200?text=NB+574", color: "Gris" },
+      { name: "New Balance 574", size: 43, quantity: 2, price: 54999, imageUrl: "https://placehold.co/200x200?text=NB+574", color: "Gris", productOriginAddress: "Buenos Aires, Argentina" },
     ],
   },
   {
@@ -83,8 +77,6 @@ const SHIPMENTS_SEED = [
     address: "San Martín 456, Rosario",
     carrier: CarrierType.MAIL,
     shippingCost: 2800,
-    originCity: "Rosario",
-    originProvince: "Santa Fe",
     shipmentDate: null,
     estimatedDeliveryDate: days(15),
     deliveryDate: null,
@@ -92,7 +84,7 @@ const SHIPMENTS_SEED = [
       { location: "Centro de distribución Rosario", status: ShipmentStatus.PENDING, description: "Envío registrado" },
     ],
     items: [
-      { name: "Converse Chuck Taylor", size: 40, quantity: 1, price: 49999, imageUrl: "https://placehold.co/200x200?text=Chuck+Taylor", color: "Negro" },
+      { name: "Converse Chuck Taylor", size: 40, quantity: 1, price: 49999, imageUrl: "https://placehold.co/200x200?text=Chuck+Taylor", color: "Negro", productOriginAddress: "Rosario, Santa Fe, Argentina" },
     ],
   },
   {
@@ -102,8 +94,6 @@ const SHIPMENTS_SEED = [
     address: "Belgrano 890, Mendoza",
     carrier: CarrierType.MAIL,
     shippingCost: 5100,
-    originCity: "Buenos Aires",
-    originProvince: "Buenos Aires",
     shipmentDate: daysAgo(14),
     estimatedDeliveryDate: now,
     deliveryDate: now,
@@ -114,7 +104,7 @@ const SHIPMENTS_SEED = [
       { location: "Mendoza", status: ShipmentStatus.DELIVERED, description: "Entregado al destinatario" },
     ],
     items: [
-      { name: "Puma Suede Classic", size: 44, quantity: 1, price: 67999, imageUrl: "https://placehold.co/200x200?text=Puma+Suede", color: "Azul marino" },
+      { name: "Puma Suede Classic", size: 44, quantity: 1, price: 67999, imageUrl: "https://placehold.co/200x200?text=Puma+Suede", color: "Azul marino", productOriginAddress: "Buenos Aires, Argentina" },
     ],
   },
   {
@@ -124,8 +114,6 @@ const SHIPMENTS_SEED = [
     address: "Italia 321, Córdoba",
     carrier: CarrierType.MAIL,
     shippingCost: 3900,
-    originCity: "Córdoba",
-    originProvince: "Córdoba",
     shipmentDate: daysAgo(1),
     estimatedDeliveryDate: days(14),
     deliveryDate: null,
@@ -134,7 +122,7 @@ const SHIPMENTS_SEED = [
       { location: "Centro de distribución Córdoba", status: ShipmentStatus.PREPARING, description: "Preparando el paquete" },
     ],
     items: [
-      { name: "Vans Old Skool", size: 42, quantity: 1, price: 58999, imageUrl: "https://placehold.co/200x200?text=Vans+Old+Skool", color: "Negro/Blanco" },
+      { name: "Vans Old Skool", size: 42, quantity: 1, price: 58999, imageUrl: "https://placehold.co/200x200?text=Vans+Old+Skool", color: "Negro/Blanco", productOriginAddress: "Córdoba, Argentina" },
     ],
   },
 ]
