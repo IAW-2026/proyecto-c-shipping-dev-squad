@@ -3,17 +3,41 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import AdminPedidosClient from "./AdminPedidosClient"
 
-export default async function AdminPedidosPage() {
+const PAGE_SIZE = 10
+
+export default async function AdminPedidosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; status?: string; search?: string }>
+}) {
   const { userId } = await auth()
   if (!userId) redirect("/sign-in")
 
-  const shipments = await prisma.shipment.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { items: true },
-  })
+  const { page, status, search } = await searchParams
+  const currentPage = parseInt(page ?? "1")
+  const skip = (currentPage - 1) * PAGE_SIZE
+
+  const where = {
+    ...(status && status !== "TODOS" ? { status: status as any } : {}),
+    ...(search ? { orderId: parseInt(search) || undefined } : {}),
+  }
+
+  const [shipments, total] = await Promise.all([
+    prisma.shipment.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: { items: true },
+      skip,
+      take: PAGE_SIZE,
+    }),
+    prisma.shipment.count({ where }),
+  ])
 
   return (
     <AdminPedidosClient
+      total={total}
+      currentPage={currentPage}
+      totalPages={Math.max(1, Math.ceil(total / PAGE_SIZE))}
       shipments={shipments.map(s => ({
         id: s.id,
         orderId: s.orderId,

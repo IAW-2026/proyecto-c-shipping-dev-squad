@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import {
   Shipment, TrackingItem, ShipmentCard, ShipmentFilters,
   StatusBadge, TrackingHistory, ShipmentInfo, ProductList, ShipmentStepper
@@ -10,15 +10,36 @@ import { Pagination } from "../components/Pagination"
 
 interface Props {
   shipments: Shipment[]
+  total: number
+  currentPage: number
+  totalPages: number
 }
 
-export default function BuyerClient({ shipments }: Props) {
+export default function BuyerClient({ shipments, total, currentPage, totalPages }: Props) {
   const [selected, setSelected] = useState<Shipment | null>(null)
   const [tracking, setTracking] = useState<TrackingItem[]>([])
-  const [filtro, setFiltro] = useState("TODOS")
-  const [search, setSearch] = useState("")
-  const [page, setPage] = useState(1)
-  const PAGE_SIZE = 10
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  const filtro = searchParams.get("status") ?? "TODOS"
+  const search = searchParams.get("search") ?? ""
+
+  function updateParams(updates: Record<string, string>) {
+    const params = new URLSearchParams(searchParams.toString())
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value) params.set(key, value)
+      else params.delete(key)
+    })
+    params.set("page", "1") // resetear página al filtrar
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  function handlePageChange(page: number) {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("page", String(page))
+    router.push(`${pathname}?${params.toString()}`)
+  }
 
   async function selectShipment(s: Shipment) {
     setSelected(s)
@@ -60,12 +81,6 @@ export default function BuyerClient({ shipments }: Props) {
     )
   }
 
-  const filtered = shipments
-    .filter(s => filtro === "TODOS" || s.status === filtro)
-    .filter(s => search.trim() === "" || String(s.orderId).includes(search.trim()))
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-
   return (
     <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
       <div style={{ fontSize: 18, fontWeight: 500, color: "var(--foreground)", marginBottom: 4 }}>Mis envíos</div>
@@ -73,24 +88,24 @@ export default function BuyerClient({ shipments }: Props) {
 
       <input
         value={search}
-        onChange={e => { setSearch(e.target.value); setPage(1) }}
+        onChange={e => updateParams({ search: e.target.value })}
         placeholder="Buscar por número de orden..."
         style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "0.5px solid var(--color-border)", fontSize: 13, background: "var(--color-surface)", color: "var(--foreground)", marginBottom: 12 }}
       />
-      <ShipmentFilters filtro={filtro} onChange={f => { setFiltro(f); setPage(1) }} />
+      <ShipmentFilters filtro={filtro} onChange={f => updateParams({ status: f === "TODOS" ? "" : f })} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {paginated.length === 0 ? (
+        {shipments.length === 0 ? (
           <div style={{ padding: "2rem", textAlign: "center", background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 12, fontSize: 14, color: "var(--color-muted)" }}>
             📦 {search ? `No hay envíos con orden #${search}` : filtro === "TODOS" ? "No hay envíos registrados" : "No tenés envíos en ese estado"}
           </div>
         ) : (
-          paginated.map(s => <ShipmentCard key={s.id} shipment={s} onClick={selectShipment} />)
+          shipments.map(s => <ShipmentCard key={s.id} shipment={s} onClick={selectShipment} />)
         )}
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-        <span style={{ fontSize: 12, color: "var(--color-muted)" }}>{filtered.length} envío{filtered.length !== 1 ? "s" : ""}</span>
-        <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+        <span style={{ fontSize: 12, color: "var(--color-muted)" }}>{total} envío{total !== 1 ? "s" : ""}</span>
+        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
       </div>
     </div>
   )
