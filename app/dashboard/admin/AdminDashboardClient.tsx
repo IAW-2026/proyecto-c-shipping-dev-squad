@@ -54,10 +54,6 @@ export default function AdminDashboardClient({ shipments }: Props) {
     pending: filtered.filter(s => s.status === "PENDING").length,
     transit: filtered.filter(s => s.status === "IN_TRANSIT").length,
     delivered: filtered.filter(s => s.status === "DELIVERED").length,
-    delayed: filtered.filter(s =>
-      s.estimatedDeliveryDate && s.deliveryDate &&
-      new Date(s.deliveryDate).getTime() > new Date(s.estimatedDeliveryDate).getTime()
-    ).length,
   }
 
   const recentShipments = useMemo(() => {
@@ -174,29 +170,11 @@ export default function AdminDashboardClient({ shipments }: Props) {
               </div>
             )
           })}
-          <div style={{ marginTop: 4, paddingTop: 12, borderTop: "0.5px solid var(--color-border)", display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10 }}>
-            <div>
-              <div style={{ fontSize: 11, color: "var(--color-muted)" }}>Entregas a tiempo</div>
-              <div style={{ fontSize: 20, fontWeight: 500, color: "var(--foreground)" }}>{deliveryRate}%</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 11, color: "var(--color-muted)" }}>Retrasos detectados</div>
-              <div style={{ fontSize: 20, fontWeight: 500, color: "var(--foreground)" }}>{stats.delayed}</div>
-            </div>
+          <div style={{ marginTop: 4, paddingTop: 12, borderTop: "0.5px solid var(--color-border)" }}>
+            <div style={{ fontSize: 11, color: "var(--color-muted)" }}>Tasa de entrega</div>
+            <div style={{ fontSize: 20, fontWeight: 500, color: "var(--foreground)" }}>{deliveryRate}%</div>
           </div>
         </div>
-      </div>
-
-      <div className="grid-kpi" style={{ display: "grid", gap: 10, marginBottom: 12 }}>
-        {[
-          { label: "Tasa de entrega", value: `${deliveryRate}%` },
-          { label: "Retrasos", value: stats.delayed },
-        ].map(k => (
-          <div key={k.label} style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 12, padding: "0.875rem 1rem" }}>
-            <div style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 6 }}>{k.label}</div>
-            <div style={{ fontSize: 24, fontWeight: 500, color: "var(--foreground)" }}>{k.value}</div>
-          </div>
-        ))}
       </div>
 
       <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 12, padding: "1rem" }}>
@@ -226,11 +204,9 @@ export default function AdminDashboardClient({ shipments }: Props) {
       <style>{`
         .grid-stats  { grid-template-columns: repeat(2, 1fr); }
         .grid-charts { grid-template-columns: 1fr; }
-        .grid-kpi    { grid-template-columns: repeat(2, 1fr); }
         @media (min-width: 768px) {
           .grid-stats  { grid-template-columns: repeat(4, 1fr); }
           .grid-charts { grid-template-columns: 7fr 5fr; }
-          .grid-kpi    { grid-template-columns: repeat(2, 1fr); }
         }
       `}</style>
     </div>
