@@ -64,14 +64,29 @@ export async function POST(req: NextRequest) {
     estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 15);
     estimatedDeliveryDate = nextWeekday(estimatedDeliveryDate);
 
-    const firstItem = body.items?.[0];
-    if (firstItem?.productOriginAddress && body.address) {
+    const itemsWithOrigin: string[] = [
+      ...new Set(
+        (body.items ?? [])
+          .map((item: { productOriginAddress?: string }) => item.productOriginAddress)
+          .filter(Boolean) as string[]
+      ),
+    ];
+
+    if (itemsWithOrigin.length > 0 && body.address) {
       try {
-        const [origin, destination] = await Promise.all([
-          geocodeAddress(firstItem.productOriginAddress),
-          geocodeAddress(body.address),
-        ]);
-        estimatedDeliveryDate = await calculateShippingTime(origin, destination);
+        const destination = await geocodeAddress(body.address);
+
+        const deliveryDates = await Promise.all(
+          itemsWithOrigin.map(async (originAddress) => {
+            const origin = await geocodeAddress(originAddress);
+            return calculateShippingTime(origin, destination);
+          })
+        );
+
+        // Tomar la fecha más lejana entre todos los orígenes
+        estimatedDeliveryDate = deliveryDates.reduce((latest, current) =>
+          current > latest ? current : latest
+        );
       } catch (geoError) {
         console.warn("No se pudo calcular la ruta, usando estimación por defecto:", geoError);
       }
