@@ -49,6 +49,7 @@ export default async function AdminPedidosPage({
         estimatedDeliveryDate: s.estimatedDeliveryDate?.toISOString() ?? null,
         deliveryDate: s.deliveryDate?.toISOString() ?? null,
         shippingCost: s.shippingCost ?? null,
+        createdAt: s.createdAt.toISOString(),
         items: s.items.map(i => ({
           id: i.id,
           name: i.name,

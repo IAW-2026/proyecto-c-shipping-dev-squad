@@ -11,12 +11,9 @@ interface Props {
 function getAvailableMonths(shipments: Shipment[]): { year: number; month: number }[] {
   const set = new Set<string>()
   shipments.forEach(s => {
-    const date = s.shipmentDate ?? s.estimatedDeliveryDate ?? s.deliveryDate
-    if (date) {
-      const d = new Date(date)
-      if (!isNaN(d.getTime())) {
-        set.add(`${d.getFullYear()}-${d.getMonth()}`)
-      }
+    const d = new Date(s.createdAt)
+    if (!isNaN(d.getTime())) {
+      set.add(`${d.getFullYear()}-${d.getMonth()}`)
     }
   })
   return Array.from(set)
@@ -30,9 +27,7 @@ function getAvailableMonths(shipments: Shipment[]): { year: number; month: numbe
 export default function AdminDashboardClient({ shipments }: Props) {
   const now = new Date()
   const hasCurrentMonth = shipments.some(s => {
-    const date = s.shipmentDate ?? s.estimatedDeliveryDate ?? s.deliveryDate
-    if (!date) return false
-    const d = new Date(date)
+    const d = new Date(s.createdAt)
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
   })
 
@@ -42,21 +37,14 @@ export default function AdminDashboardClient({ shipments }: Props) {
   const availableMonths = useMemo(() => getAvailableMonths(shipments), [shipments])
 
   const filtered = useMemo(() => {
-    const getDate = (s: Shipment) => s.deliveryDate ?? s.shipmentDate ?? s.estimatedDeliveryDate
     if (selectedYear === null || selectedMonth === null) {
       const sevenDaysAgo = new Date()
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
       sevenDaysAgo.setHours(0, 0, 0, 0)
-      return shipments.filter(s => {
-        const date = getDate(s)
-        if (!date) return false
-        return new Date(date) >= sevenDaysAgo
-      })
+      return shipments.filter(s => new Date(s.createdAt) >= sevenDaysAgo)
     }
     return shipments.filter(s => {
-      const date = getDate(s)
-      if (!date) return false
-      const d = new Date(date)
+      const d = new Date(s.createdAt)
       return d.getFullYear() === selectedYear && d.getMonth() === selectedMonth
     })
   }, [shipments, selectedYear, selectedMonth])
@@ -80,8 +68,7 @@ export default function AdminDashboardClient({ shipments }: Props) {
       while (weekStart <= daysInMonth) {
         const weekEnd = Math.min(weekStart + 6, daysInMonth)
         const count = filtered.filter(s => {
-          if (s.status !== "DELIVERED" || !s.deliveryDate) return false
-          const d = new Date(s.deliveryDate)
+          const d = new Date(s.createdAt)
           return d.getFullYear() === selectedYear && d.getMonth() === selectedMonth &&
             d.getDate() >= weekStart && d.getDate() <= weekEnd
         }).length
@@ -99,7 +86,7 @@ export default function AdminDashboardClient({ shipments }: Props) {
         const key = `${y}-${m}-${d}`
         return {
           label: date.toLocaleDateString("es-AR", { weekday: "short" }),
-          count: shipments.filter(s => s.status === "DELIVERED" && (s.deliveryDate ?? "").slice(0, 10) === key).length,
+          count: shipments.filter(s => s.createdAt.slice(0, 10) === key).length,
         }
       })
     }
@@ -153,8 +140,8 @@ export default function AdminDashboardClient({ shipments }: Props) {
         <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 12, padding: "1rem" }}>
           <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-muted)", marginBottom: 12 }}>
             {selectedYear !== null && selectedMonth !== null
-              ? `Entregas por semana — ${["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][selectedMonth]} ${selectedYear}`
-              : "Entregas recientes (últimos 7 días)"}
+              ? `Pedidos recibidos — ${["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][selectedMonth]} ${selectedYear}`
+              : "Pedidos recibidos (últimos 7 días)"}
           </div>
           <div style={{ display: "flex", alignItems: "end", gap: 8, height: 160 }}>
             {recentShipments.map(day => (

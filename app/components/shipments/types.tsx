@@ -20,6 +20,7 @@ export type Shipment = {
   estimatedDeliveryDate: string | null
   deliveryDate?: string | null
   shippingCost?: number | null
+  createdAt: string
   items: OrderItem[]
 }
 
