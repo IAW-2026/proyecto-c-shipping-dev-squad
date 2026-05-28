@@ -1,10 +1,69 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/mVV06Hfm)
-# shipping
+# Shipping App — ZapasYa
 
-Aplicación **Shipping** del [Proyecto IAW 2026](https://iaw-2026.github.io/proyecto/) — comisión `<!-- completar -->`.
+Aplicación Shipping del [Proyecto IAW 2026](https://iaw-2026.github.io/proyecto/) — comisión `DevSquad`.
+Esta app corresponde al módulo de envíos y logística en el proyecto de tipo C (Marketplace).
+Enunciado completo: https://iaw-2026.github.io/proyecto/
 
-Esta app corresponde al módulo de envíos y logística en el proyecto de tipo **C (Marketplace)**.
+App encargada del seguimiento y registro de envíos del marketplace ZapasYa. Cuando llega la confirmación de un pedido, se genera el envío y se calcula una fecha estimada de entrega usando la API de OpenRouteService según la ubicación del producto. Desde ahí, el cliente puede ver el estado de su pedido en tiempo real. Los operadores logísticos y administradores pueden ir actualizando el estado a medida que avanza. Cuando se confirma la entrega, se guarda la fecha y se le manda una notificación automática a la app de buyers para que pueda seguir con su flujo.
+
+🔗 **Deploy:** https://proyecto-c-shipping-dev-squad.vercel.app/
 
 ---
 
-Enunciado completo: <https://iaw-2026.github.io/proyecto/>
+## Acceso por tipo de usuario
+
+Todos los usuarios usan la contraseña: `IAW2026A`
+
+### Cliente
+Ve sus envíos, estados, contenido y historial de seguimiento.
+
+| Usuario | Email |
+|---|---|
+| Cliente 1 | clienteiaw1@gmail.com |
+| Cliente 2 | clienteiaw2@gmail.com |
+
+### Operador Logístico
+Ve todos los envíos del sistema y puede modificar su estado o agregar comentarios.
+
+| Usuario | Email |
+|---|---|
+| Operador | oplogiaw@hotmail.com |
+
+### Administrador
+Dashboard con estadísticas de envíos por mes (últimos 7 días). También puede ver todos los envíos como cliente y editarlos como operador logístico.
+
+| Usuario | Email |
+|---|---|
+| Administrador | adiaw1@hotmail.com |
+
+---
+
+## Simulación de webhook de entrega
+
+Para simular la notificación a la app de buyers cuando un envío es entregado:
+
+1. Entrá a [webhook.site](https://webhook.site) y copiá la URL que te genera
+2. Pegala en el `.env` local:
+   ```
+   DELIVERY_WEBHOOK_URL=https://webhook.site/tu-url-aqui
+   ```
+3. Hacé un PATCH a `/api/shipments/:order_id` con el body,
+   reemplazando `:order_id` por un ID de envío existente en el sistema:
+   ```json
+   {
+     "status": "DELIVERED",
+     "description": "Envío entregado al destinatario"
+   }
+   ```
+4. En webhook.site vas a ver la notificación llegar en tiempo real con un payload similar a:
+   ```json
+   {
+     "event": "shipment.delivered",
+     "orderId": 123,
+     "buyerId": "user_abc123",
+     "deliveredAt": "2026-05-28T22:25:30.828Z"
+   }
+   ```
+   > Los valores de `orderId` y `buyerId` van a corresponder al envío que hayas actualizado.
+
+> En producción, `DELIVERY_WEBHOOK_URL` debe apuntar al endpoint real de la app de buyers.
