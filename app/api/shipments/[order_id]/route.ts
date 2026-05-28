@@ -57,6 +57,28 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
       }
     })
 
+    if (body.status === "DELIVERED") {
+      const webhookUrl = process.env.DELIVERY_WEBHOOK_URL
+      if (webhookUrl) {
+        try {
+          await fetch(webhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              event: "shipment.delivered",
+              orderId: shipment.orderId,
+              buyerId: shipment.buyerId,
+              deliveredAt: new Date().toISOString(),
+            }),
+          })
+        } catch (webhookError) {
+          console.warn("No se pudo notificar el webhook de entrega:", webhookError)
+        }
+      } else {
+        console.warn("DELIVERY_WEBHOOK_URL no configurada, se omite la notificación")
+      }
+    }
+
     return NextResponse.json(shipment)
   } catch (error) {
     console.error("Error al actualizar el envío:", error)
