@@ -52,9 +52,9 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    if (!body.orderId || !body.buyerId || !body.address || !body.carrier) {
+    if (!body.orderId || !body.buyerId || !body.address || !body.carrier || body.shippingCost === undefined || body.shippingCost === null) {
       return NextResponse.json(
-        { error: "Faltan campos obligatorios: orderId, buyerId, address, carrier" },
+        { error: "Faltan campos obligatorios: orderId, buyerId, address, carrier, shippingCost" },
         { status: 400 }
       );
     }
@@ -98,6 +98,7 @@ export async function POST(req: NextRequest) {
         buyerId: body.buyerId,
         address: body.address,
         carrier: body.carrier,
+        shippingCost: body.shippingCost,
         estimatedDeliveryDate,
         items: {
           create: body.items ?? [],
