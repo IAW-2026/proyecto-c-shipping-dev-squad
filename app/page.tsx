@@ -3,15 +3,14 @@
 import { useAuth, SignInButton, SignUpButton } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import Image from "next/image"
 
 export default function Home() {
-  const { isSignedIn } = useAuth()
+  const { isSignedIn, isLoaded } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (isSignedIn) router.push("/dashboard")
-  }, [isSignedIn])
+    if (isLoaded && isSignedIn) router.push("/dashboard")
+  }, [isLoaded, isSignedIn])
 
   const cards = [
     { img: "/slide1.svg", title: "Preparamos tu pedido", sub: "Cada orden es empacada con cuidado" },
@@ -37,14 +36,12 @@ export default function Home() {
 
     checkTheme()
 
-    // Observa cambios de atributos Y de clases en <html>
     const observer = new MutationObserver(checkTheme)
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["data-theme", "class"],
     })
 
-    // También escucha cambios en la preferencia del sistema
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
     mediaQuery.addEventListener("change", checkTheme)
 
@@ -53,7 +50,53 @@ export default function Home() {
       mediaQuery.removeEventListener("change", checkTheme)
     }
   }, [])
-  
+
+  // Pantalla de carga: mientras Clerk resuelve la sesión (o ya sabe que está logueado y va a redirigir)
+  if (!isLoaded || isSignedIn) {
+    return (
+      <>
+        <style>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+          .loading-screen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            background: var(--color-surface, #fff);
+            z-index: 9999;
+          }
+          .loading-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--color-border, #e5e7eb);
+            border-top-color: var(--foreground, #111);
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+          }
+          .loading-text {
+            font-size: 14px;
+            color: var(--color-muted, #6b7280);
+            letter-spacing: 0.01em;
+          }
+        `}</style>
+        <div className="loading-screen">
+          <img
+            src={dark ? "/logo-oscuro.png" : "/logo-claro.png"}
+            alt="ZapasYA"
+            style={{ width: 160, height: "auto", opacity: 0.85 }}
+          />
+          <div className="loading-spinner" />
+          <span className="loading-text">Cargando...</span>
+        </div>
+      </>
+    )
+  }
+
   return (
     <>
       <style>{`
@@ -92,27 +135,25 @@ export default function Home() {
       `}</style>
 
       <div className="landing-grid">
-        {/* IZQUIERDA — Login */}
         <div className="landing-left">
-        <div
-          style={{
-            marginBottom: -50,
-            marginLeft: "-1.5rem",
-            width: "fit-content",
-            lineHeight: 0,
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={dark ? "/logo-oscuro.png" : "/logo-claro.png"}
-            alt="ZapasYA"
+          <div
             style={{
-              width: "clamp(280px, 38vw, 450px)",
-              height: "auto",
-              display: "block",
+              marginBottom: -50,
+              marginLeft: "-1.5rem",
+              width: "fit-content",
+              lineHeight: 0,
             }}
-          />
-        </div>
+          >
+            <img
+              src={dark ? "/logo-oscuro.png" : "/logo-claro.png"}
+              alt="ZapasYA"
+              style={{
+                width: "clamp(280px, 38vw, 450px)",
+                height: "auto",
+                display: "block",
+              }}
+            />
+          </div>
           <div style={{ fontSize: 28, fontWeight: 700, color: "var(--foreground)", marginBottom: 8 }}>
             Seguí tu envío ahora
           </div>
@@ -147,7 +188,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* DERECHA — Collage */}
         <div className="landing-right">
           {cards.map((c, i) => (
             <div key={i} style={{
