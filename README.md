@@ -4,7 +4,8 @@ Aplicación Shipping del [Proyecto IAW 2026](https://iaw-2026.github.io/proyecto
 Esta app corresponde al módulo de envíos y logística en el proyecto de tipo C (Marketplace).
 Enunciado completo: https://iaw-2026.github.io/proyecto/
 
-App encargada del seguimiento y registro de envíos del marketplace ZapasYa. Cuando llega la confirmación de un pedido, se genera el envío y se calcula una fecha estimada de entrega usando la API de OpenRouteService según la ubicación del producto. Desde ahí, el cliente puede ver el estado de su pedido en tiempo real. Los operadores logísticos y administradores pueden ir actualizando el estado a medida que avanza. Cuando se confirma la entrega, se guarda la fecha y se le manda una notificación automática a la app de buyers para que pueda seguir con su flujo.
+App encargada del seguimiento y registro de envíos del marketplace ZapasYa. Cuando llega la confirmación de un pedido, se genera el envío y se registran los datos del mismo. A partir de ese punto, el cliente puede ver el estado de su pedido en tiempo real. Los operadores logísticos y administradores pueden ir actualizando el estado a medida que avanza. Cuando se confirma la entrega, se le manda una notificación automática a la app de buyers para que pueda seguir con su flujo.
+Sumado a lo dicho antes, el administrador tiene acceso a un panel de estadisticas sobre los pedidos(pedidos recibidos, distribucion por estado y localidad de destino, etc) de manera mensual o solo los ultimos 7 dias
 
 🔗 **Deploy:** https://proyecto-c-shipping-dev-squad.vercel.app/
 
@@ -35,6 +36,17 @@ Dashboard con estadísticas de envíos por mes (últimos 7 días). También pued
 | Usuario | Email |
 |---|---|
 | Administrador | adiaw1@hotmail.com |
+
+---
+
+## Stack tecnológico
+- Next.js
+- React
+- TypeScript
+- Prisma + PostgreSQL
+- Clerk (autenticación y roles)
+- Tailwind CSS
+- Vercel (deploy)
 
 ---
 
