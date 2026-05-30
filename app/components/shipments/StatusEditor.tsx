@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Shipment, TrackingItem, STATUS_OPTIONS, STATUS_LABELS } from "./types"
 import { TrackingHistory } from "./TrackingHistory"
 
@@ -11,6 +11,11 @@ type Props = {
   onNovedadAdded: (updatedTracking: TrackingItem[]) => void
 }
 
+function autoResize(el: HTMLTextAreaElement) {
+  el.style.height = "0px"
+  el.style.height = el.scrollHeight + "px"
+}
+
 export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdded }: Props) {
   const [newStatus, setNewStatus] = useState(selected.status)
   const [description, setDescription] = useState("")
@@ -18,12 +23,30 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
   const [loading, setLoading] = useState(false)
   const [mensaje, setMensaje] = useState<{ texto: string; tipo: "error" | "success" } | null>(null)
 
-   useEffect(() => {
+  const descriptionRef = useRef<HTMLTextAreaElement>(null)
+  const novedadRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
     setMensaje(null)
     setDescription("")
     setNovedad("")
     setNewStatus(selected.status)
   }, [selected.orderId])
+
+  // Calcular altura inicial de los textareas al montar
+  useEffect(() => {
+    if (descriptionRef.current) autoResize(descriptionRef.current)
+    if (novedadRef.current) autoResize(novedadRef.current)
+  }, [])
+
+  // Resetear altura cuando se limpian los valores
+  useEffect(() => {
+    if (descriptionRef.current) autoResize(descriptionRef.current)
+  }, [description])
+
+  useEffect(() => {
+    if (novedadRef.current) autoResize(novedadRef.current)
+  }, [novedad])
 
   const isDelivered = selected.status === "DELIVERED"
 
@@ -65,6 +88,23 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
     showMensaje("Novedad registrada correctamente", "success")
     onNovedadAdded([...data].reverse())
     setLoading(false)
+  }
+
+  const textareaStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "8px 12px",
+    borderRadius: 8,
+    border: "0.5px solid var(--color-border)",
+    fontSize: 13,
+    background: "var(--color-surface)",
+    color: "var(--foreground)",
+    marginBottom: 10,
+    resize: "none",
+    overflow: "hidden",
+    lineHeight: "1.5",
+    boxSizing: "border-box",
+    display: "block",
+    fontFamily: "inherit",
   }
 
   if (isDelivered) {
@@ -120,11 +160,13 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
           })}
         </select>
 
-        <input
+        <textarea
+          ref={descriptionRef}
           value={description}
           onChange={e => setDescription(e.target.value)}
           placeholder="Descripción del cambio de estado"
-          style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "0.5px solid var(--color-border)", fontSize: 13, background: "var(--color-surface)", color: "var(--foreground)", marginBottom: 10 }}
+          rows={1}
+          style={textareaStyle}
         />
 
         <button
@@ -139,11 +181,13 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
       <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 12, padding: "1rem 1.25rem" }}>
         <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-muted)", marginBottom: 4 }}>Registrar novedad</div>
         <div style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 10 }}>El estado general no cambia.</div>
-        <input
+        <textarea
+          ref={novedadRef}
           value={novedad}
           onChange={e => setNovedad(e.target.value)}
           placeholder="Ej: Salió del centro de distribución en CABA"
-          style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "0.5px solid var(--color-border)", fontSize: 13, background: "var(--color-surface)", color: "var(--foreground)", marginBottom: 10 }}
+          rows={1}
+          style={textareaStyle}
         />
         <button
           onClick={addTracking}
