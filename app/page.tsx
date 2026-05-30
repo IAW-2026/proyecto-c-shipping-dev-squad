@@ -9,7 +9,7 @@ export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
-    if (isLoaded && isSignedIn) router.push("/dashboard")
+    if (isLoaded && isSignedIn) router.replace("/dashboard")
   }, [isLoaded, isSignedIn])
 
   const cards = [
@@ -19,7 +19,17 @@ export default function Home() {
     { img: "/slide4.svg", title: "Entrega rápida y segura", sub: "Nos encargamos de llevarlo hasta tu puerta" },
   ]
 
-  const [dark, setDark] = useState(false)
+  const [dark, setDark] = useState(() => {
+  if (typeof window === "undefined") return false
+  const html = document.documentElement
+  return (
+    html.getAttribute("data-theme") === "dark" ||
+    html.classList.contains("dark") ||
+    (!html.getAttribute("data-theme") &&
+      !html.classList.contains("light") &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches)
+  )
+})
 
   useEffect(() => {
     const checkTheme = () => {
