@@ -9,8 +9,9 @@ const prisma = new PrismaClient({ adapter });
 
 const now = new Date()
 const days = (d: number) => new Date(now.getTime() + d * 24 * 60 * 60 * 1000)
+const hours = (date: Date, h: number) => new Date(date.getTime() + h * 60 * 60 * 1000)
 
-// Fechas fijas
+// Fechas base de creación de cada pedido
 const abril1  = new Date("2026-04-03T10:00:00Z")
 const abril2  = new Date("2026-04-17T14:30:00Z")
 const mayo1   = new Date("2026-05-02T09:00:00Z")
@@ -31,10 +32,10 @@ const SHIPMENTS_SEED = [
     deliveryDate: new Date("2026-04-17T00:00:00Z"),
     createdAt: abril1,
     tracking: [
-      { location: "Centro de distribución Buenos Aires", status: ShipmentStatus.PENDING, description: "Envío registrado" },
-      { location: "Centro de distribución Buenos Aires", status: ShipmentStatus.PREPARING, description: "Preparando el paquete" },
-      { location: "En camino - Ruta 9", status: ShipmentStatus.IN_TRANSIT, description: "El paquete está en camino" },
-      { location: "Springfield", status: ShipmentStatus.DELIVERED, description: "Entregado al destinatario" },
+      { location: "Centro de distribución Buenos Aires", status: ShipmentStatus.PENDING,    description: "Envío registrado",           timestamp: abril1 },
+      { location: "Centro de distribución Buenos Aires", status: ShipmentStatus.PREPARING,  description: "Preparando el paquete",       timestamp: hours(abril1, 3) },
+      { location: "En camino - Ruta 9",                  status: ShipmentStatus.IN_TRANSIT, description: "El paquete está en camino",   timestamp: hours(abril1, 24) },
+      { location: "Springfield",                         status: ShipmentStatus.DELIVERED,  description: "Entregado al destinatario",   timestamp: new Date("2026-04-17T14:00:00Z") },
     ],
     items: [
       { name: "Nike Air Max 90", size: 42, quantity: 1, price: 89999, imageUrl: "https://placehold.co/200x200?text=Air+Max+90", color: "Blanco", productOriginAddress: "Buenos Aires, Argentina" },
@@ -52,10 +53,10 @@ const SHIPMENTS_SEED = [
     deliveryDate: new Date("2026-04-29T00:00:00Z"),
     createdAt: abril2,
     tracking: [
-      { location: "Centro de distribución Buenos Aires", status: ShipmentStatus.PENDING, description: "Envío registrado" },
-      { location: "Centro de distribución Buenos Aires", status: ShipmentStatus.PREPARING, description: "Preparando el paquete" },
-      { location: "En camino - Ruta 40", status: ShipmentStatus.IN_TRANSIT, description: "El paquete está en camino" },
-      { location: "Mendoza", status: ShipmentStatus.DELIVERED, description: "Entregado al destinatario" },
+      { location: "Centro de distribución Buenos Aires", status: ShipmentStatus.PENDING,    description: "Envío registrado",           timestamp: abril2 },
+      { location: "Centro de distribución Buenos Aires", status: ShipmentStatus.PREPARING,  description: "Preparando el paquete",       timestamp: hours(abril2, 4) },
+      { location: "En camino - Ruta 40",                 status: ShipmentStatus.IN_TRANSIT, description: "El paquete está en camino",   timestamp: hours(abril2, 30) },
+      { location: "Mendoza",                             status: ShipmentStatus.DELIVERED,  description: "Entregado al destinatario",   timestamp: new Date("2026-04-29T10:00:00Z") },
     ],
     items: [
       { name: "Puma Suede Classic", size: 44, quantity: 1, price: 67999, imageUrl: "https://placehold.co/200x200?text=Puma+Suede", color: "Azul marino", productOriginAddress: "Buenos Aires, Argentina" },
@@ -73,10 +74,10 @@ const SHIPMENTS_SEED = [
     deliveryDate: new Date("2026-05-11T00:00:00Z"),
     createdAt: mayo1,
     tracking: [
-      { location: "Centro de distribución Córdoba", status: ShipmentStatus.PENDING, description: "Envío registrado" },
-      { location: "Centro de distribución Córdoba", status: ShipmentStatus.PREPARING, description: "Preparando el paquete" },
-      { location: "En camino - Autopista Panamericana", status: ShipmentStatus.IN_TRANSIT, description: "El paquete está en camino" },
-      { location: "Buenos Aires", status: ShipmentStatus.DELIVERED, description: "Entregado al destinatario" },
+      { location: "Centro de distribución Córdoba",       status: ShipmentStatus.PENDING,    description: "Envío registrado",           timestamp: mayo1 },
+      { location: "Centro de distribución Córdoba",       status: ShipmentStatus.PREPARING,  description: "Preparando el paquete",       timestamp: hours(mayo1, 5) },
+      { location: "En camino - Autopista Panamericana",   status: ShipmentStatus.IN_TRANSIT, description: "El paquete está en camino",   timestamp: hours(mayo1, 48) },
+      { location: "Buenos Aires",                         status: ShipmentStatus.DELIVERED,  description: "Entregado al destinatario",   timestamp: new Date("2026-05-11T13:00:00Z") },
     ],
     items: [
       { name: "Adidas Superstar", size: 41, quantity: 1, price: 74999, imageUrl: "https://placehold.co/200x200?text=Superstar", color: "Blanco/Negro", productOriginAddress: "Córdoba, Argentina" },
@@ -95,8 +96,8 @@ const SHIPMENTS_SEED = [
     deliveryDate: null,
     createdAt: mayo2,
     tracking: [
-      { location: "Centro de distribución Córdoba", status: ShipmentStatus.PENDING, description: "Envío registrado" },
-      { location: "Centro de distribución Córdoba", status: ShipmentStatus.PREPARING, description: "Preparando el paquete" },
+      { location: "Centro de distribución Córdoba", status: ShipmentStatus.PENDING,   description: "Envío registrado",     timestamp: mayo2 },
+      { location: "Centro de distribución Córdoba", status: ShipmentStatus.PREPARING, description: "Preparando el paquete", timestamp: hours(mayo2, 2) },
     ],
     items: [
       { name: "Vans Old Skool", size: 42, quantity: 1, price: 58999, imageUrl: "https://placehold.co/200x200?text=Vans+Old+Skool", color: "Negro/Blanco", productOriginAddress: "Córdoba, Argentina" },
@@ -114,9 +115,9 @@ const SHIPMENTS_SEED = [
     deliveryDate: null,
     createdAt: mayo3,
     tracking: [
-      { location: "Centro de distribución Buenos Aires", status: ShipmentStatus.PENDING, description: "Envío registrado" },
-      { location: "Centro de distribución Buenos Aires", status: ShipmentStatus.PREPARING, description: "Preparando el paquete" },
-      { location: "En camino - Buenos Aires", status: ShipmentStatus.IN_TRANSIT, description: "El paquete está en camino" },
+      { location: "Centro de distribución Buenos Aires", status: ShipmentStatus.PENDING,    description: "Envío registrado",         timestamp: mayo3 },
+      { location: "Centro de distribución Buenos Aires", status: ShipmentStatus.PREPARING,  description: "Preparando el paquete",     timestamp: hours(mayo3, 6) },
+      { location: "En camino - Buenos Aires",            status: ShipmentStatus.IN_TRANSIT, description: "El paquete está en camino", timestamp: hours(mayo3, 24) },
     ],
     items: [
       { name: "New Balance 574", size: 43, quantity: 2, price: 54999, imageUrl: "https://placehold.co/200x200?text=NB+574", color: "Gris", productOriginAddress: "Buenos Aires, Argentina" },
@@ -134,7 +135,7 @@ const SHIPMENTS_SEED = [
     deliveryDate: null,
     createdAt: mayo4,
     tracking: [
-      { location: "Centro de distribución Rosario", status: ShipmentStatus.PENDING, description: "Envío registrado" },
+      { location: "Centro de distribución Rosario", status: ShipmentStatus.PENDING, description: "Envío registrado", timestamp: mayo4 },
     ],
     items: [
       { name: "Converse Chuck Taylor", size: 40, quantity: 1, price: 49999, imageUrl: "https://placehold.co/200x200?text=Chuck+Taylor", color: "Negro", productOriginAddress: "Rosario, Santa Fe, Argentina" },
@@ -153,21 +154,29 @@ async function main() {
     const shipment = await prisma.shipment.create({
       data: {
         ...shipmentData,
-        tracking: {
-          create: tracking,
-        },
-        items: {
-          create: items,
-        },
+        items: { create: items },
       },
     });
 
-    // Forzar el createdAt con la fecha deseada
+    // Forzar createdAt del shipment
     await prisma.$executeRawUnsafe(
-  `UPDATE "Shipment" SET "createdAt" = $1 WHERE id = $2`,
-  createdAt,
-  shipment.id
-);
+      `UPDATE "Shipment" SET "createdAt" = $1 WHERE id = $2`,
+      createdAt,
+      shipment.id
+    );
+
+    // Crear cada tracking item y forzar su timestamp
+    for (const t of tracking) {
+      const { timestamp, ...trackingData } = t
+      const created = await prisma.tracking.create({
+        data: { ...trackingData, shipmentId: shipment.id },
+      })
+      await prisma.$executeRawUnsafe(
+        `UPDATE "Tracking" SET "timestamp" = $1 WHERE id = $2`,
+        timestamp,
+        created.id
+      )
+    }
   }
 
   console.log(`✅ ${SHIPMENTS_SEED.length} envíos creados con tracking e items`);
