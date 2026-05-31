@@ -24,8 +24,6 @@ export default function OperatorClient({ shipments, total, currentPage, totalPag
 
   const [selected, setSelected] = useState<Shipment | null>(null)
   const [tracking, setTracking] = useState<TrackingItem[]>([])
-  const [loading, setLoading] = useState(false)
-  const [localShipments, setLocalShipments] = useState<Shipment[]>(shipments)
 
   const filtro = searchParams.get("status") ?? "TODOS"
   const search = searchParams.get("search") ?? ""
@@ -58,7 +56,6 @@ export default function OperatorClient({ shipments, total, currentPage, totalPag
     setTracking(updatedTracking)
     const updated = { ...selected, status: newStatus }
     setSelected(updated)
-    setLocalShipments(prev => prev.map(s => s.orderId === selected.orderId ? { ...s, status: newStatus } : s))
   }
 
   function handleNovedadAdded(updatedTracking: TrackingItem[]) {

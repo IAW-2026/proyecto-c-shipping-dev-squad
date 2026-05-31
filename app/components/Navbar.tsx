@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import { useUser, UserButton } from "@clerk/nextjs"
+import { UserButton } from "@clerk/nextjs"
 import Image from "next/image"
 
 export default function Navbar() {
-  const { user } = useUser()
-  const [dark, setDark] = useState(false)
+  const [dark, setDark] = useState(() => {
+    if (typeof window === "undefined") return false
+    return localStorage.getItem("theme") === "dark"
+  })
 
   useEffect(() => {
     const saved = localStorage.getItem('theme')

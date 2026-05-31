@@ -25,8 +25,6 @@ export default function AdminPedidosClient({ shipments, total, currentPage, tota
   const [selected, setSelected] = useState<Shipment | null>(null)
   const [tracking, setTracking] = useState<TrackingItem[]>([])
   const [editando, setEditando] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [localShipments, setLocalShipments] = useState<Shipment[]>(shipments)
 
   const filtro = searchParams.get("status") ?? "TODOS"
   const search = searchParams.get("search") ?? ""
@@ -60,7 +58,6 @@ export default function AdminPedidosClient({ shipments, total, currentPage, tota
     setTracking(updatedTracking)
     const updated = { ...selected, status: newStatus }
     setSelected(updated)
-    setLocalShipments(prev => prev.map(s => s.orderId === selected.orderId ? { ...s, status: newStatus } : s))
     setEditando(false)
   }
 
