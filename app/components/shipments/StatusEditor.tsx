@@ -70,7 +70,7 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
     const data = await res.json()
     setDescription("")
     showMensajeEstado("Estado actualizado correctamente", "success")
-    onStatusUpdated(newStatus, [...data].reverse())
+    onStatusUpdated(newStatus, [...data])
     setLoading(false)
   }
 
@@ -86,7 +86,7 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
     const data = await res.json()
     setNovedad("")
     showMensajeNovedad("Novedad registrada correctamente", "success")
-    onNovedadAdded([...data].reverse())
+    onNovedadAdded([...data])
     setLoading(false)
   }
 

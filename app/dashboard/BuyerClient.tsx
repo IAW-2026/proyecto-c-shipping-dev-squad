@@ -46,7 +46,7 @@ export default function BuyerClient({ shipments, total, currentPage, totalPages 
     setSelected(s)
     const res = await fetch(`/api/shipments/${s.orderId}/tracking`)
     const data = await res.json()
-    setTracking([...data].reverse())
+    setTracking([...data])
   }
 
   if (selected) {

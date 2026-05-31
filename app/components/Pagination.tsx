@@ -26,9 +26,10 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Props) {
           key={page}
           onClick={() => onPageChange(page)}
           style={{
-            padding: "6px 12px", borderRadius: 8, border: "0.5px solid var(--color-border)",
-            background: page === currentPage ? "#171717" : "var(--color-surface)",
-            color: page === currentPage ? "#fff" : "var(--foreground)",
+            padding: "6px 12px", borderRadius: 8,
+            border: page === currentPage ? "1.5px solid var(--foreground)" : "0.5px solid var(--color-border)",
+            background: page === currentPage ? "var(--foreground)" : "var(--color-surface)",
+            color: page === currentPage ? "var(--color-surface)" : "var(--foreground)",
             fontSize: 13, cursor: "pointer", fontWeight: page === currentPage ? 500 : 400,
           }}
         >

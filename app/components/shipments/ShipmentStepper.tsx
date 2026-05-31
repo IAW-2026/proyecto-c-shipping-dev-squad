@@ -20,7 +20,8 @@ export function ShipmentStepper({ status, tracking }: Props) {
         const state = getStepState(step, status)
         const isLast = i === STEPS.length - 1
         const nextState = !isLast ? getStepState(STEPS[i + 1], status) : null
-        const trackItem = tracking.find(t => t.status === step)
+        const trackItems = tracking.filter(t => t.status === step)
+        const trackItem = trackItems[0]
         return (
           <div key={step} style={{ display: "flex", gap: 14 }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 20 }}>

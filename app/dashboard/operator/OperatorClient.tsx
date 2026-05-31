@@ -49,7 +49,7 @@ export default function OperatorClient({ shipments, total, currentPage, totalPag
     setSelected(s)
     const res = await fetch(`/api/shipments/${s.orderId}/tracking`)
     const data = await res.json()
-    setTracking([...data].reverse())
+    setTracking([...data])
   }
 
   function handleStatusUpdated(newStatus: string, updatedTracking: TrackingItem[]) {
