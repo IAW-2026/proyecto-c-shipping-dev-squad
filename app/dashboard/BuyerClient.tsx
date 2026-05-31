@@ -4,7 +4,8 @@ import { useState } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import {
   Shipment, TrackingItem, ShipmentCard, ShipmentFilters,
-  StatusBadge, TrackingHistory, ShipmentInfo, ProductList, ShipmentStepper
+  StatusBadge, TrackingHistory, ShipmentInfo, ProductList, ShipmentStepper,
+  ShipmentSearch
 } from "../components/shipments"
 import { Pagination } from "../components/Pagination"
 
@@ -86,12 +87,7 @@ export default function BuyerClient({ shipments, total, currentPage, totalPages 
       <div style={{ fontSize: 18, fontWeight: 500, color: "var(--foreground)", marginBottom: 4 }}>Mis envíos</div>
       <div style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: "1.5rem" }}>Seguí el estado de tus pedidos</div>
 
-      <input
-        value={search}
-        onChange={e => updateParams({ search: e.target.value })}
-        placeholder="Buscar por número de orden..."
-        style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "0.5px solid var(--color-border)", fontSize: 13, background: "var(--color-surface)", color: "var(--foreground)", marginBottom: 12 }}
-      />
+      <ShipmentSearch value={search} onChange={v => updateParams({ search: v })} />
       <ShipmentFilters filtro={filtro} onChange={f => updateParams({ status: f === "TODOS" ? "" : f })} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>

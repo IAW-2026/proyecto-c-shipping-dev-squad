@@ -5,7 +5,8 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import {
   Shipment, TrackingItem,
   ShipmentCard, ShipmentFilters, StatusBadge,
-  ShipmentStepper
+  ShipmentStepper,
+  ShipmentSearch
 } from "../../components/shipments"
 import { StatusEditor } from "../../components/shipments/StatusEditor"
 import { Pagination } from "../../components/Pagination"
@@ -103,8 +104,7 @@ export default function OperatorClient({ shipments, total, currentPage, totalPag
       <div style={{ fontSize: 18, fontWeight: 500, color: "var(--foreground)", marginBottom: 4 }}>Gestión de envíos</div>
       <div style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: "1.5rem" }}>Actualizá estados y registrá novedades</div>
 
-      <input value={search} onChange={e => updateParams({ search: e.target.value })} placeholder="Buscar por número de orden..."
-        style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "0.5px solid var(--color-border)", fontSize: 13, background: "var(--color-surface)", color: "var(--foreground)", marginBottom: 12 }} />
+      <ShipmentSearch value={search} onChange={v => updateParams({ search: v })} />
       <ShipmentFilters filtro={filtro} onChange={f => updateParams({ status: f === "TODOS" ? "" : f })} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
