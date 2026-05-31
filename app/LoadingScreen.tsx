@@ -1,4 +1,14 @@
+"use client"
+
+import { useEffect, useState } from "react"
+
 export default function LoadingScreen({ dark }: { dark: boolean }) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   return (
     <>
       <style>{`
@@ -31,11 +41,13 @@ export default function LoadingScreen({ dark }: { dark: boolean }) {
         }
       `}</style>
       <div className="loading-screen">
-        <img
-          src={dark ? "/logo-oscuro.png" : "/logo-claro.png"}
-          alt="ZapasYA"
-          style={{ width: 300, height: "auto", opacity: 0.85 }}
-        />
+        {mounted && (
+          <img
+            src={dark ? "/logo-oscuro.png" : "/logo-claro.png"}
+            alt="ZapasYA"
+            style={{ width: 300, height: "auto", opacity: 0.85 }}
+          />
+        )}
         <div className="loading-spinner" />
         <span className="loading-text">Cargando...</span>
       </div>

@@ -15,12 +15,14 @@ export function ShipmentFilters({ filtro, onChange }: Props) {
           style={{
             padding: "6px 14px",
             borderRadius: 99,
-            border: "0.5px solid var(--color-border)",
+            border: filtro === f
+              ? "1.5px solid var(--foreground)"
+              : "0.5px solid var(--color-border)",
             fontSize: 12,
             cursor: "pointer",
-            background: filtro === f ? "#171717" : "var(--color-surface)",
-            color: filtro === f ? "#fff" : "var(--foreground)",
-            fontWeight: filtro === f ? 500 : 400,
+            background: filtro === f ? "var(--foreground)" : "var(--color-surface)",
+            color: filtro === f ? "var(--color-surface)" : "var(--foreground)",
+            fontWeight: filtro === f ? 600 : 400,
           }}
         >
           {f === "TODOS" ? "Todos" : STATUS_LABELS[f]}

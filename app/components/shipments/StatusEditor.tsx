@@ -21,25 +21,20 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
   const [description, setDescription] = useState("")
   const [novedad, setNovedad] = useState("")
   const [loading, setLoading] = useState(false)
-  const [mensaje, setMensaje] = useState<{ texto: string; tipo: "error" | "success" } | null>(null)
+  const [mensajeEstado, setMensajeEstado] = useState<{ texto: string; tipo: "error" | "success" } | null>(null)
+  const [mensajeNovedad, setMensajeNovedad] = useState<{ texto: string; tipo: "error" | "success" } | null>(null)
 
   const descriptionRef = useRef<HTMLTextAreaElement>(null)
   const novedadRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    setMensaje(null)
+    setMensajeEstado(null)
+    setMensajeNovedad(null)
     setDescription("")
     setNovedad("")
     setNewStatus(selected.status)
   }, [selected.orderId])
 
-  // Calcular altura inicial de los textareas al montar
-  useEffect(() => {
-    if (descriptionRef.current) autoResize(descriptionRef.current)
-    if (novedadRef.current) autoResize(novedadRef.current)
-  }, [])
-
-  // Resetear altura cuando se limpian los valores
   useEffect(() => {
     if (descriptionRef.current) autoResize(descriptionRef.current)
   }, [description])
@@ -50,14 +45,19 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
 
   const isDelivered = selected.status === "DELIVERED"
 
-  function showMensaje(texto: string, tipo: "error" | "success") {
-    setMensaje({ texto, tipo })
-    setTimeout(() => setMensaje(null), 3000)
+  function showMensajeEstado(texto: string, tipo: "error" | "success") {
+    setMensajeEstado({ texto, tipo })
+    setTimeout(() => setMensajeEstado(null), 3000)
+  }
+
+  function showMensajeNovedad(texto: string, tipo: "error" | "success") {
+    setMensajeNovedad({ texto, tipo })
+    setTimeout(() => setMensajeNovedad(null), 3000)
   }
 
   async function updateStatus() {
     if (!description.trim()) {
-      showMensaje("Agregá una descripción antes de actualizar el estado", "error")
+      showMensajeEstado("Agregá una descripción antes de actualizar el estado", "error")
       return
     }
     setLoading(true)
@@ -69,7 +69,7 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
     const res = await fetch(`/api/shipments/${selected.orderId}/tracking`)
     const data = await res.json()
     setDescription("")
-    showMensaje("Estado actualizado correctamente", "success")
+    showMensajeEstado("Estado actualizado correctamente", "success")
     onStatusUpdated(newStatus, [...data].reverse())
     setLoading(false)
   }
@@ -85,7 +85,7 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
     const res = await fetch(`/api/shipments/${selected.orderId}/tracking`)
     const data = await res.json()
     setNovedad("")
-    showMensaje("Novedad registrada correctamente", "success")
+    showMensajeNovedad("Novedad registrada correctamente", "success")
     onNovedadAdded([...data].reverse())
     setLoading(false)
   }
@@ -106,6 +106,16 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
     display: "block",
     fontFamily: "inherit",
   }
+
+  const mensajeStyle = (tipo: "error" | "success"): React.CSSProperties => ({
+    padding: "10px 14px",
+    borderRadius: 8,
+    marginBottom: 10,
+    fontSize: 13,
+    background: tipo === "error" ? "#fee2e2" : "#dcfce7",
+    color: tipo === "error" ? "#b91c1c" : "#15803d",
+    border: `0.5px solid ${tipo === "error" ? "#dc2626" : "#16a34a"}`,
+  })
 
   if (isDelivered) {
     return (
@@ -130,17 +140,13 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
 
   return (
     <>
+      {/* Cambiar estado */}
       <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: 12 }}>
         <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-muted)", marginBottom: 10 }}>Cambiar estado general</div>
 
-        {mensaje && (
-          <div style={{
-            padding: "10px 14px", borderRadius: 8, marginBottom: 10, fontSize: 13,
-            background: mensaje.tipo === "error" ? "#fee2e2" : "#dcfce7",
-            color: mensaje.tipo === "error" ? "#b91c1c" : "#15803d",
-            border: `0.5px solid ${mensaje.tipo === "error" ? "#dc2626" : "#16a34a"}`,
-          }}>
-            {mensaje.tipo === "error" ? "⚠️ " : "✅ "}{mensaje.texto}
+        {mensajeEstado && (
+          <div style={mensajeStyle(mensajeEstado.tipo)}>
+            {mensajeEstado.tipo === "error" ? "⚠️ " : "✅ "}{mensajeEstado.texto}
           </div>
         )}
 
@@ -172,15 +178,23 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
         <button
           onClick={updateStatus}
           disabled={loading}
-          style={{ width: "100%", padding: "9px", borderRadius: 8, border: "none", background: "#171717", color: "#fff", fontSize: 13, cursor: "pointer" }}
+          style={{ width: "100%", padding: "9px", borderRadius: 8, border: "none", background: "var(--foreground)", color: "var(--color-surface)", fontSize: 13, cursor: "pointer" }}
         >
           {loading ? "Actualizando..." : "Actualizar estado"}
         </button>
       </div>
 
+      {/* Registrar novedad */}
       <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 12, padding: "1rem 1.25rem" }}>
         <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-muted)", marginBottom: 4 }}>Registrar novedad</div>
         <div style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 10 }}>El estado general no cambia.</div>
+
+        {mensajeNovedad && (
+          <div style={mensajeStyle(mensajeNovedad.tipo)}>
+            {mensajeNovedad.tipo === "error" ? "⚠️ " : "✅ "}{mensajeNovedad.texto}
+          </div>
+        )}
+
         <textarea
           ref={novedadRef}
           value={novedad}
@@ -192,7 +206,7 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
         <button
           onClick={addTracking}
           disabled={loading || !novedad.trim()}
-          style={{ width: "100%", padding: "9px", borderRadius: 8, border: "none", background: "#171717", color: "#fff", fontSize: 13, cursor: "pointer" }}
+          style={{ width: "100%", padding: "9px", borderRadius: 8, border: "none", background: "var(--foreground)", color: "var(--color-surface)", fontSize: 13, cursor: "pointer" }}
         >
           Agregar novedad
         </button>
