@@ -52,6 +52,7 @@ export default function AdminPedidosClient({ shipments, total, currentPage, tota
   }
 
   async function selectShipment(s: Shipment) {
+    router.refresh()
     setSelected(s)
     setEditando(false)
     const res = await fetch(`/api/shipments/${s.orderId}/tracking`)
@@ -78,7 +79,12 @@ export default function AdminPedidosClient({ shipments, total, currentPage, tota
     if (editando) {
       return (
         <div style={{ width: "90%", maxWidth: 800, margin: "0 auto", padding: "2rem 1rem" }}>
-          <div onClick={() => setEditando(false)} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>← Volver al detalle</div>
+          <div onClick={async () => {
+            setEditando(false)
+            const res = await fetch(`/api/shipments/${selected.orderId}/tracking`)
+            const data = await res.json()
+            setTracking([...data])
+          }} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>← Volver al detalle</div>
           <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>ORDEN #{selected.orderId}</div>
           <div style={{ fontSize: 20, fontWeight: 500, color: "var(--foreground)", marginBottom: "1.5rem" }}>Modificar envío</div>
           <StatusEditor

@@ -43,6 +43,7 @@ export default function BuyerClient({ shipments, total, currentPage, totalPages 
   }
 
   async function selectShipment(s: Shipment) {
+    router.refresh()
     setSelected(s)
     const res = await fetch(`/api/shipments/${s.orderId}/tracking`)
     const data = await res.json()
@@ -54,7 +55,7 @@ export default function BuyerClient({ shipments, total, currentPage, totalPages 
 
     return (
       <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
-        <div onClick={() => setSelected(null)} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>
+        <div onClick={() => { setSelected(null); router.refresh() }} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>
           ← Volver a mis envíos
         </div>
         <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>ORDEN #{selected.orderId}</div>

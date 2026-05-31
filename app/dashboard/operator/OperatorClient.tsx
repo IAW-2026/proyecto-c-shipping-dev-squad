@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import {
   Shipment, TrackingItem,
@@ -25,6 +25,11 @@ export default function OperatorClient({ shipments, total, currentPage, totalPag
 
   const [selected, setSelected] = useState<Shipment | null>(null)
   const [tracking, setTracking] = useState<TrackingItem[]>([])
+  const [localShipments, setLocalShipments] = useState<Shipment[]>(shipments)
+
+  useEffect(() => {
+    setLocalShipments(shipments)
+  }, [shipments])
 
   const filtro = searchParams.get("status") ?? "TODOS"
   const search = searchParams.get("search") ?? ""
@@ -57,6 +62,7 @@ export default function OperatorClient({ shipments, total, currentPage, totalPag
     setTracking(updatedTracking)
     const updated = { ...selected, status: newStatus }
     setSelected(updated)
+    setLocalShipments(prev => prev.map(s => s.id === selected.id ? updated : s))
   }
 
   function handleNovedadAdded(updatedTracking: TrackingItem[]) {
@@ -69,7 +75,7 @@ export default function OperatorClient({ shipments, total, currentPage, totalPag
 
     return (
       <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
-        <div onClick={() => setSelected(null)} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>
+        <div onClick={() => { setSelected(null); router.refresh() }} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>
           ← Volver a envíos
         </div>
         <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 16, overflow: "hidden", marginBottom: 12, display: "flex" }}>
@@ -108,12 +114,12 @@ export default function OperatorClient({ shipments, total, currentPage, totalPag
       <ShipmentFilters filtro={filtro} onChange={f => updateParams({ status: f === "TODOS" ? "" : f })} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {shipments.length === 0 ? (
+        {localShipments.length === 0 ? (
           <div style={{ padding: "2rem", textAlign: "center", background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 12, fontSize: 14, color: "var(--color-muted)" }}>
             📦 {search ? `No hay envíos con orden #${search}` : filtro === "TODOS" ? "No hay envíos registrados" : "No hay envíos en ese estado"}
           </div>
         ) : (
-          shipments.map(s => <ShipmentCard key={s.id} shipment={s} onClick={selectShipment} />)
+          localShipments.map(s => <ShipmentCard key={s.id} shipment={s} onClick={selectShipment} />)
         )}
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
