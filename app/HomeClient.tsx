@@ -30,7 +30,7 @@ export default function HomeClient() {
   })
 
   useEffect(() => {
-    if (isLoaded && isSignedIn) router.replace("/dashboard")
+    if (isLoaded && isSignedIn) router.replace("/dashboard/buyer")
   }, [isLoaded, isSignedIn])
 
   useEffect(() => {
