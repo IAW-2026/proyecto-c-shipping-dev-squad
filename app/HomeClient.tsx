@@ -6,7 +6,6 @@ import { useEffect, useState } from "react"
 import LoadingScreen from "./LoadingScreen"
 import Image from 'next/image'
 
-
 const cards = [
   { img: "/slide1.svg", title: "Preparamos tu pedido", sub: "Cada orden es empacada con cuidado" },
   { img: "/slide2.svg", title: "Recibí lo que compraste", sub: "Coordinamos la entrega por vos" },
@@ -63,7 +62,7 @@ export default function HomeClient() {
     }
   }, [])
 
-  if (!isLoaded || isSignedIn) {
+  if (isLoaded && isSignedIn) {
     return <LoadingScreen />
   }
 
@@ -111,6 +110,7 @@ export default function HomeClient() {
               style={{ width: "clamp(280px, 38vw, 450px)", height: "auto", display: "block" }}
             />
           </div>
+
           <div style={{ fontSize: 28, fontWeight: 700, color: "var(--foreground)", marginBottom: 8 }}>
             Seguí tu envío ahora
           </div>
@@ -118,8 +118,24 @@ export default function HomeClient() {
             Conocé el estado de tus envíos en todo momento.
           </div>
 
-          <SignInButton mode="modal">
-            <button style={{
+          {isLoaded ? (
+            <SignInButton mode="modal">
+              <button style={{
+                padding: "12px 24px",
+                borderRadius: 10,
+                border: "1px solid var(--foreground)",
+                background: "var(--foreground)",
+                color: "var(--background)",
+                fontSize: 15,
+                fontWeight: 500,
+                cursor: "pointer",
+                width: "fit-content",
+              }}>
+                Iniciar sesión →
+              </button>
+            </SignInButton>
+          ) : (
+            <button disabled style={{
               padding: "12px 24px",
               borderRadius: 10,
               border: "1px solid var(--foreground)",
@@ -127,20 +143,25 @@ export default function HomeClient() {
               color: "var(--background)",
               fontSize: 15,
               fontWeight: 500,
-              cursor: "pointer",
+              cursor: "not-allowed",
               width: "fit-content",
+              opacity: 0.5,
             }}>
-              Iniciar sesión →
+              Iniciando...
             </button>
-          </SignInButton>
+          )}
 
           <div style={{ marginTop: "1.5rem", fontSize: 13, color: "var(--color-muted)" }}>
             ¿No tenés cuenta?{" "}
-            <SignUpButton mode="modal">
-              <span style={{ color: "var(--foreground)", cursor: "pointer", textDecoration: "underline" }}>
-                Registrate
-              </span>
-            </SignUpButton>
+            {isLoaded ? (
+              <SignUpButton mode="modal">
+                <span style={{ color: "var(--foreground)", cursor: "pointer", textDecoration: "underline" }}>
+                  Registrate
+                </span>
+              </SignUpButton>
+            ) : (
+              <span style={{ color: "var(--color-muted)" }}>Registrate</span>
+            )}
             {" "}para ver todos tus envíos.
           </div>
         </div>
