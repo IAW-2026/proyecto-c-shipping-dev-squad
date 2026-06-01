@@ -4,6 +4,8 @@ import { useAuth, SignInButton, SignUpButton } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import LoadingScreen from "./LoadingScreen"
+import Image from 'next/image'
+
 
 const cards = [
   { img: "/slide1.svg", title: "Preparamos tu pedido", sub: "Cada orden es empacada con cuidado" },
@@ -62,7 +64,7 @@ export default function HomeClient() {
   }, [])
 
   if (!isLoaded || isSignedIn) {
-    return <LoadingScreen dark={dark} />
+    return <LoadingScreen />
   }
 
   return (
@@ -99,9 +101,13 @@ export default function HomeClient() {
       <div className="landing-grid">
         <div className="landing-left">
           <div style={{ marginBottom: -50, marginLeft: "-1.5rem", width: "fit-content", lineHeight: 0 }}>
-            <img
-              src={dark ? "/logo-oscuro.png" : "/logo-claro.png"}
+            <Image
+              src={dark ? "/logo-oscuro.webp" : "/logo-claro.webp"}
               alt="ZapasYA"
+              width={450}
+              height={150}
+              priority
+              quality={80}
               style={{ width: "clamp(280px, 38vw, 450px)", height: "auto", display: "block" }}
             />
           </div>
@@ -148,7 +154,13 @@ export default function HomeClient() {
               width: "45%",
               border: "0.5px solid var(--color-border)",
             }}>
-              <img src={c.img} alt={c.title} style={{ width: "100%", height: 100, objectFit: "contain" }} />
+              <Image
+                src={c.img}
+                alt={c.title}
+                width={200}
+                height={100}
+                style={{ width: "100%", height: 100, objectFit: "contain" }}
+              />
               <div style={{ fontSize: 14, fontWeight: 500, color: "var(--foreground)", marginTop: 8 }}>{c.title}</div>
               <div style={{ fontSize: 12, color: "var(--color-muted)" }}>{c.sub}</div>
             </div>

@@ -40,7 +40,7 @@ export default function Navbar() {
     >
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <Image
-          src={mounted && dark ? "/logo-oscuro.png" : "/logo-claro.png"}
+          src={mounted && dark ? "/logo-oscuro.webp" : "/logo-claro.webp"}
           alt="ZapasYA"
           width={140}
           height={40}
