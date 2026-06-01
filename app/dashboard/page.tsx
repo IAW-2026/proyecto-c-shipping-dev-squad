@@ -26,7 +26,7 @@ export default async function BuyerPage({
   const [shipments, total] = await Promise.all([
     prisma.shipment.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { orderId: "desc" }],
       include: { items: true },
       skip,
       take: PAGE_SIZE,

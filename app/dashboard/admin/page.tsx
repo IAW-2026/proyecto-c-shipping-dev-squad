@@ -8,7 +8,7 @@ export default async function AdminDashboardPage() {
   if (!userId) redirect("/sign-in")
 
   const shipments = await prisma.shipment.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ createdAt: "desc" }, { orderId: "desc" }],
     include: { items: true },
   })
 

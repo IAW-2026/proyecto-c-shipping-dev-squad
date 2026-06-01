@@ -47,6 +47,8 @@ export default function BuyerClient({ shipments, total, currentPage, totalPages 
     const res = await fetch(`/api/shipments/${s.orderId}/tracking`)
     const data = await res.json()
     window.scrollTo(0, 0)
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
     setSelected(s)
     setTracking([...data])
   }
