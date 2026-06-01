@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import {
   Shipment, TrackingItem,
@@ -26,11 +26,6 @@ export default function AdminPedidosClient({ shipments, total, currentPage, tota
   const [selected, setSelected] = useState<Shipment | null>(null)
   const [tracking, setTracking] = useState<TrackingItem[]>([])
   const [editando, setEditando] = useState(false)
-  const [localShipments, setLocalShipments] = useState<Shipment[]>(shipments)
-
-  useEffect(() => {
-    setLocalShipments(shipments)
-  }, [shipments])
 
   const filtro = searchParams.get("status") ?? "TODOS"
   const search = searchParams.get("search") ?? ""
@@ -52,20 +47,21 @@ export default function AdminPedidosClient({ shipments, total, currentPage, tota
   }
 
   async function selectShipment(s: Shipment) {
-    router.refresh()
-    setSelected(s)
     setEditando(false)
-    const res = await fetch(`/api/shipments/${s.orderId}/tracking`)
-    const data = await res.json()
-    setTracking([...data])
+    const [shipmentRes, trackingRes] = await Promise.all([
+      fetch(`/api/shipments/${s.orderId}`),
+      fetch(`/api/shipments/${s.orderId}/tracking`),
+    ])
+    const shipmentData = await shipmentRes.json()
+    const trackingData = await trackingRes.json()
+    setSelected({ ...s, status: shipmentData.status })
+    setTracking([...trackingData])
   }
 
   function handleStatusUpdated(newStatus: string, updatedTracking: TrackingItem[]) {
     if (!selected) return
     setTracking(updatedTracking)
-    const updated = { ...selected, status: newStatus }
-    setSelected(updated)
-    setLocalShipments(prev => prev.map(s => s.id === selected.id ? updated : s))
+    setSelected({ ...selected, status: newStatus })
   }
 
   function handleNovedadAdded(updatedTracking: TrackingItem[]) {
@@ -99,7 +95,7 @@ export default function AdminPedidosClient({ shipments, total, currentPage, tota
 
     return (
       <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
-        <div onClick={() => setSelected(null)} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>← Volver a pedidos</div>
+        <div onClick={() => { setSelected(null); router.refresh() }} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>← Volver a pedidos</div>
         <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>ORDEN #{selected.orderId}</div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem", flexWrap: "wrap", gap: 8 }}>
           <div style={{ fontSize: 20, fontWeight: 500, color: "var(--foreground)" }}>Detalle del envío</div>
@@ -136,12 +132,12 @@ export default function AdminPedidosClient({ shipments, total, currentPage, tota
       <ShipmentFilters filtro={filtro} onChange={f => updateParams({ status: f === "TODOS" ? "" : f })} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {localShipments.length === 0 ? (
+        {shipments.length === 0 ? (
           <div style={{ padding: "2rem", textAlign: "center", background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 12, fontSize: 14, color: "var(--color-muted)" }}>
             📦 {search ? `No hay envíos con orden #${search}` : filtro === "TODOS" ? "No hay envíos registrados" : "No hay envíos en ese estado"}
           </div>
         ) : (
-          localShipments.map(s => <ShipmentCard key={s.id} shipment={s} onClick={selectShipment} showBuyer />)
+          shipments.map(s => <ShipmentCard key={s.id} shipment={s} onClick={selectShipment} showBuyer />)
         )}
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>

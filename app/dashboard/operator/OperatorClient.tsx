@@ -51,10 +51,14 @@ export default function OperatorClient({ shipments, total, currentPage, totalPag
   }
 
   async function selectShipment(s: Shipment) {
-    setSelected(s)
-    const res = await fetch(`/api/shipments/${s.orderId}/tracking`)
-    const data = await res.json()
-    setTracking([...data])
+    const [shipmentRes, trackingRes] = await Promise.all([
+      fetch(`/api/shipments/${s.orderId}`),
+      fetch(`/api/shipments/${s.orderId}/tracking`),
+    ])
+    const shipmentData = await shipmentRes.json()
+    const trackingData = await trackingRes.json()
+    setSelected({ ...s, status: shipmentData.status })
+    setTracking([...trackingData])
   }
 
   function handleStatusUpdated(newStatus: string, updatedTracking: TrackingItem[]) {
