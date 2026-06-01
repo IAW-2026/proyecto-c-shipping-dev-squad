@@ -57,6 +57,7 @@ export default function OperatorClient({ shipments, total, currentPage, totalPag
     ])
     const shipmentData = await shipmentRes.json()
     const trackingData = await trackingRes.json()
+    window.scrollTo(0, 0)
     setSelected({ ...s, status: shipmentData.status })
     setTracking([...trackingData])
   }

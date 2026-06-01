@@ -44,9 +44,10 @@ export default function BuyerClient({ shipments, total, currentPage, totalPages 
 
   async function selectShipment(s: Shipment) {
     router.refresh()
-    setSelected(s)
     const res = await fetch(`/api/shipments/${s.orderId}/tracking`)
     const data = await res.json()
+    window.scrollTo(0, 0)
+    setSelected(s)
     setTracking([...data])
   }
 

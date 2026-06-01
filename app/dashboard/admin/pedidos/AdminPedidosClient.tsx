@@ -54,6 +54,7 @@ export default function AdminPedidosClient({ shipments, total, currentPage, tota
     ])
     const shipmentData = await shipmentRes.json()
     const trackingData = await trackingRes.json()
+    window.scrollTo(0, 0)
     setSelected({ ...s, status: shipmentData.status })
     setTracking([...trackingData])
   }
@@ -76,9 +77,10 @@ export default function AdminPedidosClient({ shipments, total, currentPage, tota
       return (
         <div style={{ width: "90%", maxWidth: 800, margin: "0 auto", padding: "2rem 1rem" }}>
           <div onClick={async () => {
-            setEditando(false)
             const res = await fetch(`/api/shipments/${selected.orderId}/tracking`)
             const data = await res.json()
+            window.scrollTo(0, 0)
+            setEditando(false)
             setTracking([...data])
           }} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>← Volver al detalle</div>
           <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>ORDEN #{selected.orderId}</div>
