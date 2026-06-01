@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import {
   Shipment, TrackingItem, ShipmentCard, ShipmentFilters,
@@ -17,7 +17,6 @@ interface Props {
 }
 
 export default function BuyerClient({ shipments, total, currentPage, totalPages }: Props) {
-  const [selected, setSelected] = useState<Shipment | null>(null)
   const [tracking, setTracking] = useState<TrackingItem[]>([])
   const router = useRouter()
   const pathname = usePathname()
@@ -25,6 +24,19 @@ export default function BuyerClient({ shipments, total, currentPage, totalPages 
 
   const filtro = searchParams.get("status") ?? "TODOS"
   const search = searchParams.get("search") ?? ""
+  const selectedOrderId = searchParams.get("orderId")
+  const selected = shipments.find(s => String(s.orderId) === selectedOrderId) ?? null
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [selectedOrderId])
+
+  useEffect(() => {
+    if (!selectedOrderId) return
+    fetch(`/api/shipments/${selectedOrderId}/tracking`)
+      .then(r => r.json())
+      .then(setTracking)
+  }, [selectedOrderId])
 
   function updateParams(updates: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString())
@@ -32,7 +44,7 @@ export default function BuyerClient({ shipments, total, currentPage, totalPages 
       if (value) params.set(key, value)
       else params.delete(key)
     })
-    params.set("page", "1") 
+    params.set("page", "1")
     router.push(`${pathname}?${params.toString()}`)
   }
 
@@ -42,15 +54,16 @@ export default function BuyerClient({ shipments, total, currentPage, totalPages 
     router.push(`${pathname}?${params.toString()}`)
   }
 
-  async function selectShipment(s: Shipment) {
-    router.refresh()
-    const res = await fetch(`/api/shipments/${s.orderId}/tracking`)
-    const data = await res.json()
-    window.scrollTo(0, 0)
-    document.documentElement.scrollTop = 0
-    document.body.scrollTop = 0
-    setSelected(s)
-    setTracking([...data])
+  function openShipment(s: Shipment) {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("orderId", String(s.orderId))
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  function closeShipment() {
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete("orderId")
+    router.push(`${pathname}?${params.toString()}`)
   }
 
   if (selected) {
@@ -58,7 +71,7 @@ export default function BuyerClient({ shipments, total, currentPage, totalPages 
 
     return (
       <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
-        <div onClick={() => { setSelected(null); router.refresh() }} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>
+        <div onClick={closeShipment} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>
           ← Volver a mis envíos
         </div>
         <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>ORDEN #{selected.orderId}</div>
@@ -100,7 +113,7 @@ export default function BuyerClient({ shipments, total, currentPage, totalPages 
             📦 {search ? `No hay envíos con orden #${search}` : filtro === "TODOS" ? "No hay envíos registrados" : "No tenés envíos en ese estado"}
           </div>
         ) : (
-          shipments.map(s => <ShipmentCard key={s.id} shipment={s} onClick={selectShipment} />)
+          shipments.map(s => <ShipmentCard key={s.id} shipment={s} onClick={openShipment} />)
         )}
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>

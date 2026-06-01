@@ -33,7 +33,7 @@ export function ShipmentSearch({ value, onChange }: Props) {
       ref={inputRef}
       defaultValue={value}
       onChange={handleChange}
-      placeholder="Buscar por número de orden..."
+      placeholder="Buscar por número de orden exacto..."
       inputMode="numeric"
       style={{
         width: "100%",

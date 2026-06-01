@@ -12,7 +12,7 @@ type Props = {
 }
 
 function autoResize(el: HTMLTextAreaElement) {
-  el.style.height = "0px"
+  el.style.height = "auto"
   el.style.height = el.scrollHeight + "px"
 }
 
@@ -100,7 +100,7 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
     color: "var(--foreground)",
     marginBottom: 10,
     resize: "none",
-    overflow: "hidden",
+
     lineHeight: "1.5",
     boxSizing: "border-box",
     display: "block",
@@ -158,8 +158,9 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
           {STATUS_OPTIONS.map(s => {
             const currentIdx = STATUS_OPTIONS.indexOf(selected.status)
             const optionIdx = STATUS_OPTIONS.indexOf(s)
+            const isDisabled = optionIdx < currentIdx || optionIdx > currentIdx + 1
             return (
-              <option key={s} value={s} disabled={optionIdx < currentIdx}>
+              <option key={s} value={s} disabled={isDisabled}>
                 {STATUS_LABELS[s]} {optionIdx < currentIdx ? "✗" : ""}
               </option>
             )

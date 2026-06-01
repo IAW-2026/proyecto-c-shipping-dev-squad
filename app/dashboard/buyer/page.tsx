@@ -16,11 +16,15 @@ export default async function BuyerPage({
   const { page, status, search } = await searchParams
   const currentPage = parseInt(page ?? "1")
   const skip = (currentPage - 1) * PAGE_SIZE
+  const parsedSearch = search ? parseInt(search) : undefined
+  const isOutOfRange = parsedSearch !== undefined && parsedSearch > 2147483647
+  const orderId = parsedSearch && !isOutOfRange ? parsedSearch : undefined
 
   const where = {
     buyerId: userId,
     ...(status && status !== "TODOS" ? { status: status as any } : {}),
-    ...(search ? { orderId: parseInt(search) || undefined } : {}),
+    ...(orderId ? { orderId } : {}),
+    ...(isOutOfRange ? { id: -1 } : {}),
   }
 
   const [shipments, total] = await Promise.all([

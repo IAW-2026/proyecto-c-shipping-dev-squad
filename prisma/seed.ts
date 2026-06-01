@@ -25,7 +25,7 @@ const mayo6    = new Date("2026-05-31T12:00:00Z")
 const SHIPMENTS_SEED = [
   {
     orderId: 1,
-    buyerId: "user_3EKShExQwqluXp2XDxRZwGjEPSJ",
+    buyerId: "user_3EYIfOu17xLwFsFnYQUYiycCyeq",
     status: ShipmentStatus.DELIVERED,
     address: "Av. Siempreviva 742, Springfield",
     carrier: CarrierType.MAIL,
@@ -46,7 +46,7 @@ const SHIPMENTS_SEED = [
   },
   {
     orderId: 2,
-    buyerId: "user_3DpAklmtRLrf6rB65ko5VHFqRhZ",
+    buyerId: "user_3EYIRUdenttnXEHgRSWXw5vSMyb",
     status: ShipmentStatus.DELIVERED,
     address: "Belgrano 890, Mendoza",
     carrier: CarrierType.MAIL,
@@ -67,7 +67,7 @@ const SHIPMENTS_SEED = [
   },
   {
     orderId: 3,
-    buyerId: "user_3EKShExQwqluXp2XDxRZwGjEPSJ",
+    buyerId: "user_3EYIfOu17xLwFsFnYQUYiycCyeq",
     status: ShipmentStatus.DELIVERED,
     address: "Calle Falsa 123, Buenos Aires",
     carrier: CarrierType.MAIL,
@@ -89,7 +89,7 @@ const SHIPMENTS_SEED = [
   },
   {
     orderId: 4,
-    buyerId: "user_3DpAklmtRLrf6rB65ko5VHFqRhZ",
+    buyerId: "user_3EYIRUdenttnXEHgRSWXw5vSMyb",
     status: ShipmentStatus.PREPARING,
     address: "Italia 321, Córdoba",
     carrier: CarrierType.MAIL,
@@ -108,7 +108,7 @@ const SHIPMENTS_SEED = [
   },
   {
     orderId: 5,
-    buyerId: "user_3EKShExQwqluXp2XDxRZwGjEPSJ",
+    buyerId: "user_3EYIfOu17xLwFsFnYQUYiycCyeq",
     status: ShipmentStatus.DELIVERED,
     address: "Lavalle 750, Buenos Aires",
     carrier: CarrierType.MAIL,
@@ -129,7 +129,7 @@ const SHIPMENTS_SEED = [
   },
   {
     orderId: 6,
-    buyerId: "user_3DpAklmtRLrf6rB65ko5VHFqRhZ",
+    buyerId: "user_3EYIRUdenttnXEHgRSWXw5vSMyb",
     status: ShipmentStatus.IN_TRANSIT,
     address: "San Juan 1100, Córdoba",
     carrier: CarrierType.MAIL,
@@ -149,7 +149,7 @@ const SHIPMENTS_SEED = [
   },
   {
     orderId: 7,
-    buyerId: "user_3EKShExQwqluXp2XDxRZwGjEPSJ",
+    buyerId: "user_3EYIfOu17xLwFsFnYQUYiycCyeq",
     status: ShipmentStatus.IN_TRANSIT,
     address: "Av. Corrientes 1234, Buenos Aires",
     carrier: CarrierType.PICKUP,
@@ -169,7 +169,7 @@ const SHIPMENTS_SEED = [
   },
   {
     orderId: 8,
-    buyerId: "user_3DpAklmtRLrf6rB65ko5VHFqRhZ",
+    buyerId: "user_3EYIRUdenttnXEHgRSWXw5vSMyb",
     status: ShipmentStatus.PENDING,
     address: "San Martín 456, Rosario",
     carrier: CarrierType.MAIL,
@@ -187,7 +187,7 @@ const SHIPMENTS_SEED = [
   },
   {
     orderId: 9,
-    buyerId: "user_3EKShExQwqluXp2XDxRZwGjEPSJ",
+    buyerId: "user_3EYIfOu17xLwFsFnYQUYiycCyeq",
     status: ShipmentStatus.PENDING,
     address: "Av. Santa Fe 2500, Buenos Aires",
     carrier: CarrierType.MAIL,
@@ -205,7 +205,7 @@ const SHIPMENTS_SEED = [
   },
   {
     orderId: 10,
-    buyerId: "user_3EKShExQwqluXp2XDxRZwGjEPSJ",
+    buyerId: "user_3EYIfOu17xLwFsFnYQUYiycCyeq",
     status: ShipmentStatus.PENDING,
     address: "Córdoba 1800, Rosario",
     carrier: CarrierType.MAIL,
@@ -223,7 +223,7 @@ const SHIPMENTS_SEED = [
   },
   {
     orderId: 11,
-    buyerId: "user_3DpAklmtRLrf6rB65ko5VHFqRhZ",
+    buyerId: "user_3EYIRUdenttnXEHgRSWXw5vSMyb",
     status: ShipmentStatus.PENDING,
     address: "Belgrano 1200, Mendoza",
     carrier: CarrierType.MAIL,

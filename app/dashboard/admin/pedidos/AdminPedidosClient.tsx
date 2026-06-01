@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import {
   Shipment, TrackingItem,
@@ -23,42 +23,91 @@ export default function AdminPedidosClient({ shipments, total, currentPage, tota
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
+  const orderId = searchParams.get("order")
+  const mode    = searchParams.get("mode")
+  const filtro  = searchParams.get("status") || "TODOS"
+  const search  = searchParams.get("search") ?? ""
+
   const [selected, setSelected] = useState<Shipment | null>(null)
   const [tracking, setTracking] = useState<TrackingItem[]>([])
-  const [editando, setEditando] = useState(false)
+  const [loading,  setLoading]  = useState(false)
 
-  const filtro = searchParams.get("status") ?? "TODOS"
-  const search = searchParams.get("search") ?? ""
+  useEffect(() => {
+    if (!searchParams.get("page")) {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set("page", "1")
+      router.replace(`${pathname}?${params.toString()}`)
+    }
+  }, [])
 
-  function updateParams(updates: Record<string, string>) {
+  useEffect(() => {
+    if (!orderId) {
+      setSelected(null)
+      setTracking([])
+      return
+    }
+
+    let cancelled = false
+    setLoading(true)
+
+    Promise.all([
+      fetch(`/api/shipments/${orderId}`).then(r => r.json()),
+      fetch(`/api/shipments/${orderId}/tracking`).then(r => r.json()),
+    ]).then(([shipmentData, trackingData]) => {
+      if (cancelled) return
+      const base = shipments.find(s => s.orderId === Number(orderId)) ?? ({ orderId: Number(orderId) } as unknown as Shipment)
+      setSelected({ ...base, status: shipmentData.status })
+      setTracking(trackingData)
+      window.scrollTo({ top: 0, behavior: "instant" })
+    }).finally(() => {
+      if (!cancelled) setLoading(false)
+    })
+
+    return () => { cancelled = true }
+  }, [orderId])
+
+  function buildParams(updates: Record<string, string | null>) {
     const params = new URLSearchParams(searchParams.toString())
     Object.entries(updates).forEach(([key, value]) => {
-      if (value) params.set(key, value)
+      if (value != null && value !== "") params.set(key, value)
       else params.delete(key)
     })
-    params.set("page", "1")
+    return params
+  }
+
+  function updateFilters(updates: Record<string, string>) {
+    const params = buildParams({ ...updates, page: "1" })
     router.push(`${pathname}?${params.toString()}`)
   }
 
   function handlePageChange(page: number) {
-    const params = new URLSearchParams(searchParams.toString())
-    params.set("page", String(page))
+    const params = buildParams({ page: String(page) })
     router.push(`${pathname}?${params.toString()}`)
   }
 
-  async function selectShipment(s: Shipment) {
-    setEditando(false)
-    const [shipmentRes, trackingRes] = await Promise.all([
-      fetch(`/api/shipments/${s.orderId}`),
-      fetch(`/api/shipments/${s.orderId}/tracking`),
-    ])
-    const shipmentData = await shipmentRes.json()
-    const trackingData = await trackingRes.json()
-    window.scrollTo(0, 0)
-    document.documentElement.scrollTop = 0
-    document.body.scrollTop = 0
-    setSelected({ ...s, status: shipmentData.status })
-    setTracking([...trackingData])
+  function openOrder(s: Shipment) {
+    const params = buildParams({ order: String(s.orderId), mode: null })
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  function goToEdit() {
+    const params = buildParams({ mode: "edit" })
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  function goBackToDetail() {
+    const params = buildParams({ mode: null })
+    router.replace(`${pathname}?${params.toString()}`)
+    if (orderId) {
+      fetch(`/api/shipments/${orderId}/tracking`)
+        .then(r => r.json())
+        .then(data => { setTracking([...data]); window.scrollTo({ top: 0, behavior: "instant" }) })
+    }
+  }
+
+  function goBackToList() {
+    const params = buildParams({ order: null, mode: null })
+    router.push(`${pathname}?${params.toString()}`)
   }
 
   function handleStatusUpdated(newStatus: string, updatedTracking: TrackingItem[]) {
@@ -71,41 +120,46 @@ export default function AdminPedidosClient({ shipments, total, currentPage, tota
     setTracking(updatedTracking)
   }
 
-  if (selected) {
+  if (orderId && !selected) {
+    return (
+      <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
+        <div style={{ fontSize: 13, color: "var(--color-muted)", marginTop: "4rem", textAlign: "center" }}>Cargando pedido...</div>
+      </div>
+    )
+  }
+
+  if (orderId && selected && mode === "edit") {
+    return (
+      <div style={{ width: "90%", maxWidth: 800, margin: "0 auto", padding: "2rem 1rem" }}>
+        <div onClick={goBackToDetail} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>← Volver al detalle</div>
+        <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>ORDEN #{selected.orderId}</div>
+        <div style={{ fontSize: 20, fontWeight: 500, color: "var(--foreground)", marginBottom: "1.5rem" }}>Modificar envío</div>
+        <StatusEditor
+          selected={selected}
+          tracking={tracking}
+          onStatusUpdated={handleStatusUpdated}
+          onNovedadAdded={handleNovedadAdded}
+        />
+      </div>
+    )
+  }
+
+  if (orderId && selected) {
     const items = selected.items ?? []
     const isDelivered = selected.status === "DELIVERED"
 
-    if (editando) {
-      return (
-        <div style={{ width: "90%", maxWidth: 800, margin: "0 auto", padding: "2rem 1rem" }}>
-          <div onClick={async () => {
-            const res = await fetch(`/api/shipments/${selected.orderId}/tracking`)
-            const data = await res.json()
-            window.scrollTo(0, 0)
-            setEditando(false)
-            setTracking([...data])
-          }} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>← Volver al detalle</div>
-          <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>ORDEN #{selected.orderId}</div>
-          <div style={{ fontSize: 20, fontWeight: 500, color: "var(--foreground)", marginBottom: "1.5rem" }}>Modificar envío</div>
-          <StatusEditor
-            selected={selected}
-            tracking={tracking}
-            onStatusUpdated={handleStatusUpdated}
-            onNovedadAdded={handleNovedadAdded}
-          />
-        </div>
-      )
-    }
-
     return (
       <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
-        <div onClick={() => { setSelected(null); router.refresh() }} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>← Volver a pedidos</div>
+        {loading && (
+          <div style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: "1rem" }}>Cargando…</div>
+        )}
+        <div onClick={goBackToList} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>← Volver a pedidos</div>
         <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>ORDEN #{selected.orderId}</div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem", flexWrap: "wrap", gap: 8 }}>
           <div style={{ fontSize: 20, fontWeight: 500, color: "var(--foreground)" }}>Detalle del envío</div>
           {!isDelivered && (
             <button
-              onClick={() => setEditando(true)}
+              onClick={goToEdit}
               style={{ padding: "8px 16px", borderRadius: 8, border: "0.5px solid var(--color-border)", fontSize: 13, cursor: "pointer", background: "var(--color-surface)", color: "var(--foreground)" }}
             >
               ✏️ Modificar
@@ -132,8 +186,8 @@ export default function AdminPedidosClient({ shipments, total, currentPage, tota
       <div style={{ fontSize: 18, fontWeight: 500, color: "var(--foreground)", marginBottom: 4 }}>Pedidos</div>
       <div style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: "1.5rem" }}>Todos los envíos del sistema</div>
 
-      <ShipmentSearch value={search} onChange={v => updateParams({ search: v })} />
-      <ShipmentFilters filtro={filtro} onChange={f => updateParams({ status: f === "TODOS" ? "" : f })} />
+      <ShipmentSearch value={search} onChange={v => updateFilters({ search: v })} />
+      <ShipmentFilters filtro={filtro} onChange={f => updateFilters({ status: f === "TODOS" ? "" : f })} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {shipments.length === 0 ? (
@@ -141,9 +195,10 @@ export default function AdminPedidosClient({ shipments, total, currentPage, tota
             📦 {search ? `No hay envíos con orden #${search}` : filtro === "TODOS" ? "No hay envíos registrados" : "No hay envíos en ese estado"}
           </div>
         ) : (
-          shipments.map(s => <ShipmentCard key={s.id} shipment={s} onClick={selectShipment} showBuyer />)
+          shipments.map(s => <ShipmentCard key={s.id} shipment={s} onClick={openOrder} showBuyer />)
         )}
       </div>
+
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
         <span style={{ fontSize: 12, color: "var(--color-muted)" }}>{total} envío{total !== 1 ? "s" : ""}</span>
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
