@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
+import { Suspense } from "react"
 import BuyerClient from "./BuyerClient"
 
 const PAGE_SIZE = 10
@@ -39,6 +40,7 @@ export default async function BuyerPage({
   ])
 
   return (
+    <Suspense fallback={null}>
     <BuyerClient
       total={total}
       currentPage={currentPage}
@@ -67,5 +69,6 @@ export default async function BuyerPage({
         })),
       }))}
     />
+    </Suspense>
   )
 }

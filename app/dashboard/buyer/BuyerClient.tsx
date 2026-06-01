@@ -22,7 +22,7 @@ export default function BuyerClient({ shipments, total, currentPage, totalPages 
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const filtro = searchParams.get("status") ?? "TODOS"
+  const filtro = searchParams.get("status") || "TODOS"
   const search = searchParams.get("search") ?? ""
   const selectedOrderId = searchParams.get("orderId")
   const selected = shipments.find(s => String(s.orderId) === selectedOrderId) ?? null
@@ -41,7 +41,7 @@ export default function BuyerClient({ shipments, total, currentPage, totalPages 
   function updateParams(updates: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString())
     Object.entries(updates).forEach(([key, value]) => {
-      if (value) params.set(key, value)
+      if (value != null && value !== "") params.set(key, value)
       else params.delete(key)
     })
     params.set("page", "1")
