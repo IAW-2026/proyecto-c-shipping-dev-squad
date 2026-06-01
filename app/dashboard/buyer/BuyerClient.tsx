@@ -6,8 +6,8 @@ import {
   Shipment, TrackingItem, ShipmentCard, ShipmentFilters,
   StatusBadge, TrackingHistory, ShipmentInfo, ProductList, ShipmentStepper,
   ShipmentSearch
-} from "../components/shipments"
-import { Pagination } from "../components/Pagination"
+} from "../../components/shipments"
+import { Pagination } from "../../components/Pagination"
 
 interface Props {
   shipments: Shipment[]
