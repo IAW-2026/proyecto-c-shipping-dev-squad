@@ -59,14 +59,22 @@ Para simular la notificación a la app de buyers cuando un envío es entregado:
    ```
    DELIVERY_WEBHOOK_URL=https://webhook.site/tu-url-aqui
    ```
-3. Hacé un PATCH a `/api/shipments/:order_id` con el body,
-   reemplazando `:order_id` por un ID de envío existente en el sistema:
+3. Para hacer el PATCH a la API podés usar **Thunder Client** (extensión de VS Code):
+
+   - Abrís la pestaña de Thunder Client en VS Code (ícono del rayo en la barra lateral)
+   - Clickeás **New Request**
+   - Cambiás el método a `PATCH`
+   - Pegás la URL: `https://proyecto-c-shipping-dev-squad.vercel.app/api/shipments/5` (reemplazando el `5` por el número de orden que quieras marcar como entregado)
+   - Vas a la pestaña **Body** → seleccionás **JSON**
+   - Pegás el body:
    ```json
    {
      "status": "DELIVERED",
      "description": "Envío entregado al destinatario"
    }
    ```
+   - Le das a **Send**
+
 4. En webhook.site vas a ver la notificación llegar en tiempo real con un payload similar a:
    ```json
    {
@@ -79,3 +87,13 @@ Para simular la notificación a la app de buyers cuando un envío es entregado:
    > Los valores de `orderId` y `buyerId` van a corresponder al envío que hayas actualizado.
 
 > En producción, `DELIVERY_WEBHOOK_URL` debe apuntar al endpoint real de la app de buyers.
+
+---
+
+## Observaciones
+
+### Modo oscuro en dispositivos móviles
+En algunos teléfonos, si el sistema operativo está configurado en modo oscuro, el toggle de tema claro de la app puede no funcionar correctamente. Esto es una limitación de ciertos navegadores móviles que fuerzan el esquema de color del sistema y no respetan el cambio manual dentro de la app. No es un bug de la aplicación.
+
+### Inicio de sesión con código de verificación
+Clerk puede solicitar un código de verificación al iniciar sesión. En ese caso, accedé a la cuenta de mail del usuario en su plataforma correspondiente (Gmail u Hotmail) — todas las cuentas usan la misma contraseña: `IAW2026A`.
