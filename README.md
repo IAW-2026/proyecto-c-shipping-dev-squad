@@ -4,38 +4,45 @@ Aplicación Shipping del [Proyecto IAW 2026](https://iaw-2026.github.io/proyecto
 Esta app corresponde al módulo de envíos y logística en el proyecto de tipo C (Marketplace).
 Enunciado completo: https://iaw-2026.github.io/proyecto/
 
-App encargada del seguimiento y registro de envíos del marketplace ZapasYa. Cuando llega la confirmación de un pedido, se genera el envío y se registran los datos del mismo. A partir de ese punto, el cliente puede ver el estado de su pedido en tiempo real. Los operadores logísticos y administradores pueden ir actualizando el estado a medida que avanza. Cuando se confirma la entrega, se le manda una notificación automática a la app de buyers para que pueda seguir con su flujo.
-Sumado a lo dicho antes, el administrador tiene acceso a un panel de estadisticas sobre los pedidos(pedidos recibidos, distribucion por estado y localidad de destino, etc) de manera mensual o solo los ultimos 7 dias
-
 🔗 **Deploy:** https://proyecto-c-shipping-dev-squad.vercel.app/
 
 ---
 
-## Acceso por tipo de usuario
+## Descripción
 
-Todos los usuarios usan la contraseña: `IAW2026A`
+App encargada del seguimiento y registro de envíos del marketplace ZapasYa. Cuando llega la confirmación de un pedido, se genera el envío y se registran los datos del mismo. A partir de ese punto, el cliente puede ir siguiendo el estado del pedido a medida que este evoluciona.
+
+Los operadores logísticos y administradores pueden actualizar el estado a medida que avanza el envío, o registrar novedades sin cambiar el estado general. Cuando se confirma la entrega, se dispara una notificación automática a la app de buyers para que pueda seguir con su flujo.
+
+El administrador tiene además acceso a un panel de estadísticas sobre los pedidos (cantidad recibida, distribución por estado y localidad de destino, entre otros), con posibilidad de filtrar entre los últimos 7 días o el mes completo.
+
+---
+
+## Usuarios de prueba
+
+Todos los usuarios usan la contraseña: `iawuser#` y cumplen lo pedido por la catedra en cuanto al correo
 
 ### Cliente
 Ve sus envíos, estados, contenido y historial de seguimiento.
 
 | Usuario | Email |
 |---|---|
-| Cliente 1 | clienteiaw1@gmail.com |
-| Cliente 2 | clienteiaw2@gmail.com |
+| Cliente 1 | cliente1+clerk_test@iaw.com |
+| Cliente 2 | cliente2+clerk_test@iaw.com |
 
 ### Operador Logístico
 Ve todos los envíos del sistema y puede modificar su estado o agregar comentarios.
 
 | Usuario | Email |
 |---|---|
-| Operador | oplogiaw@hotmail.com |
+| Operador | oplogistico+clerk_test@iaw.com |
 
 ### Administrador
 Dashboard con estadísticas de envíos por mes (últimos 7 días). También puede ver todos los envíos como cliente y editarlos como operador logístico.
 
 | Usuario | Email |
 |---|---|
-| Administrador | adiaw1@hotmail.com |
+| Administrador | admin+clerk_test@iaw.com |
 
 ---
 
@@ -75,7 +82,7 @@ Para simular la notificación a la app de buyers cuando un envío es entregado:
    ```
    - Le das a **Send**
 
-4. En webhook.site vas a ver la notificación llegar en tiempo real con un payload similar a:
+4. En webhook.site vas a ver la notificación llegar con un payload similar a:
    ```json
    {
      "event": "shipment.delivered",
@@ -90,10 +97,29 @@ Para simular la notificación a la app de buyers cuando un envío es entregado:
 
 ---
 
+## Fortalezas
+
+   - El panel de estadísticas del administrador ofrece una vista clara de la operación: cantidad de envíos recibidos, distribución por estado y por localidad de destino, con la posibilidad de filtrar entre los últimos 7 días o el mes completo. Es útil para detectar cuellos de botella logísticos de un vistazo.
+
+   - El flujo de estados está restringido para evitar errores operativos: no es posible saltar pasos (por ejemplo, pasar directamente de Pendiente a Entregado). Cada estado solo habilita el siguiente en la cadena, lo que reduce la posibilidad de registros incorrectos.
+
+   - La interfaz es completamente responsive y funciona tanto en desktop como en mobile, con adaptaciones específicas de layout para pantallas chicas. El soporte de modo oscuro y claro está implementado a nivel de variables CSS, sin dependencia de librerías externas de theming.
+
+---
+
+## Debilidades
+
+No implementamos la funcionalidad de cancelar un pedido. En el estado actual, una vez generado el envío, el flujo solo avanza hacia adelante. Esto es algo que se contempla para una etapa futura, idealmente coordinado con las apps de pagos y sellers para manejar correctamente el estado global del pedido.
+
+---
+
+## Issue conocido
+
+Al actualizar el estado de un pedido y luego navegar hacia atrás con las flechas del navegador, la vista puede mostrar el estado anterior al cambio. Se recomienda usar las flechas propias de la app (el botón "← Volver") en lugar de los controles del navegador.
+
+---
+
 ## Observaciones
 
-### Modo oscuro en dispositivos móviles
-En algunos teléfonos, si el sistema operativo está configurado en modo oscuro, el toggle de tema claro de la app puede no funcionar correctamente. Esto es una limitación de ciertos navegadores móviles que fuerzan el esquema de color del sistema y no respetan el cambio manual dentro de la app. No es un bug de la aplicación.
-
-### Inicio de sesión con código de verificación
-Clerk puede solicitar un código de verificación al iniciar sesión. En ese caso, accedé a la cuenta de mail del usuario en su plataforma correspondiente (Gmail u Hotmail) — todas las cuentas usan la misma contraseña: `IAW2026A`.
+- La asignación de roles se hace mediante `publicMetadata.role` en Clerk.
+- En algunos teléfonos con modo oscuro activado a nivel sistema, el toggle de tema claro puede no funcionar correctamente. Es una limitación de ciertos navegadores móviles que fuerzan el esquema de color del sistema, no un bug de la app.
