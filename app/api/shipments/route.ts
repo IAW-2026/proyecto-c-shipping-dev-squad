@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { geocodeAddress } from "@/lib/geocode";
+import { verifyApiKey } from "@/lib/apiAuth";
 import axios from "axios";
 
 const ORS_API_KEY = process.env.ORS_API_KEY!;
@@ -49,6 +51,11 @@ async function calculateShippingTime(
 }
 
 export async function POST(req: NextRequest) {
+  // Solo apps externas autenticadas con API key pueden crear envíos
+  if (!verifyApiKey(req)) {
+    return NextResponse.json({ error: "API key inválida o ausente" }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
 
@@ -57,6 +64,13 @@ export async function POST(req: NextRequest) {
         { error: "Faltan campos obligatorios: orderId, buyerId, address, carrier, shippingCost" },
         { status: 400 }
       );
+    }
+
+    // Idempotencia: si ya existe un envío para esta orden, lo devolvemos en vez de crear otro
+    // (requiere que orderId sea @unique en el modelo Shipment de Prisma)
+    const existing = await prisma.shipment.findUnique({ where: { orderId: body.orderId } });
+    if (existing) {
+      return NextResponse.json(existing, { status: 200 });
     }
 
     // Fallback: 15 días a partir de hoy en día de semana
@@ -121,6 +135,14 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  // Acepta API key (otras apps) o sesión de Clerk (tu propio frontend)
+  if (!verifyApiKey(req)) {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+  }
+
   try {
     const buyerId = req.nextUrl.searchParams.get("buyer_id");
 

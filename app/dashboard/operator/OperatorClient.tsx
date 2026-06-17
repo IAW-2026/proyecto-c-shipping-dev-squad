@@ -36,6 +36,7 @@ export default function OperatorClient({ shipments, total, currentPage, totalPag
 
   useEffect(() => {
     if (!selectedOrderId) return
+    if (selected) setCurrentShipment(selected)
     Promise.all([
       fetch(`/api/shipments/${selectedOrderId}`).then(r => r.json()),
       fetch(`/api/shipments/${selectedOrderId}/tracking`).then(r => r.json()),
@@ -43,10 +44,6 @@ export default function OperatorClient({ shipments, total, currentPage, totalPag
       setCurrentShipment(prev => prev ? { ...prev, status: shipmentData.status } : null)
       setTracking(trackingData)
     })
-  }, [selectedOrderId])
-
-  useEffect(() => {
-    if (selected) setCurrentShipment(selected)
   }, [selectedOrderId])
 
   function updateParams(updates: Record<string, string>) {

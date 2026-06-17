@@ -17,7 +17,6 @@ function autoResize(el: HTMLTextAreaElement) {
 }
 
 export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdded }: Props) {
-  const [newStatus, setNewStatus] = useState(selected.status)
   const [description, setDescription] = useState("")
   const [novedad, setNovedad] = useState("")
   const [loading, setLoading] = useState(false)
@@ -32,7 +31,6 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
     setMensajeNovedad(null)
     setDescription("")
     setNovedad("")
-    setNewStatus(selected.status)
   }, [selected.orderId])
 
   useEffect(() => {
@@ -56,6 +54,9 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
   }
 
   async function updateStatus() {
+    const currentIdx = STATUS_OPTIONS.indexOf(selected.status)
+    const nextStatus = STATUS_OPTIONS[currentIdx + 1]
+    if (!nextStatus) return
     if (!description.trim()) {
       showMensajeEstado("Agregá una descripción antes de actualizar el estado", "error")
       return
@@ -64,13 +65,13 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
     await fetch(`/api/shipments/${selected.orderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: newStatus, description }),
+      body: JSON.stringify({ status: nextStatus, description }),
     })
     const res = await fetch(`/api/shipments/${selected.orderId}/tracking`)
     const data = await res.json()
     setDescription("")
     showMensajeEstado("Estado actualizado correctamente", "success")
-    onStatusUpdated(newStatus, [...data])
+    onStatusUpdated(nextStatus, [...data])
     setLoading(false)
   }
 
@@ -100,6 +101,7 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
     color: "var(--foreground)",
     marginBottom: 10,
     resize: "none",
+    overflow: "hidden",
 
     lineHeight: "1.5",
     boxSizing: "border-box",
@@ -150,22 +152,18 @@ export function StatusEditor({ selected, tracking, onStatusUpdated, onNovedadAdd
           </div>
         )}
 
-        <select
-          value={newStatus}
-          onChange={e => setNewStatus(e.target.value)}
-          style={{ padding: "8px 12px", borderRadius: 8, border: "0.5px solid var(--color-border)", fontSize: 13, background: "var(--color-surface)", color: "var(--foreground)", width: "100%", marginBottom: 10 }}
-        >
-          {STATUS_OPTIONS.map(s => {
-            const currentIdx = STATUS_OPTIONS.indexOf(selected.status)
-            const optionIdx = STATUS_OPTIONS.indexOf(s)
-            const isDisabled = optionIdx < currentIdx || optionIdx > currentIdx + 1
-            return (
-              <option key={s} value={s} disabled={isDisabled}>
-                {STATUS_LABELS[s]} {optionIdx < currentIdx ? "✗" : ""}
-              </option>
-            )
-          })}
-        </select>
+        {(() => {
+          const currentIdx = STATUS_OPTIONS.indexOf(selected.status)
+          const nextStatus = STATUS_OPTIONS[currentIdx + 1]
+          return nextStatus ? (
+            <div style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: 10 }}>
+              Siguiente estado:{" "}
+              <span style={{ fontWeight: 600, color: "var(--foreground)" }}>
+                {STATUS_LABELS[nextStatus]}
+              </span>
+            </div>
+          ) : null
+        })()}
 
         <textarea
           ref={descriptionRef}

@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { verifyApiKey } from "@/lib/apiAuth";
 
 const ORDER = ["PENDING", "PREPARING", "IN_TRANSIT", "DELIVERED"]
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ order_id: string }> }) {
+  // Acepta API key (otras apps) o sesión de Clerk (tu propio frontend)
+  if (!verifyApiKey(req)) {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+  }
+
   try {
     const { order_id } = await params;
     const shipment = await prisma.shipment.findUnique({
@@ -20,6 +30,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ order_id: string }> }) {
+  // Solo lo usa tu frontend (operador/admin actualizando estado), no otras apps
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
   try {
     const { order_id } = await params
     const body = await req.json()
