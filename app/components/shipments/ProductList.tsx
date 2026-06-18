@@ -3,11 +3,12 @@ import { OrderItem } from "./types"
 type Props = {
   items: OrderItem[]
   shippingCost?: number | null
+  discount?: number | null
 }
 
-export function ProductList({ items, shippingCost }: Props) {
+export function ProductList({ items, shippingCost, discount }: Props) {
   const subtotal = items.reduce((sum, p) => sum + p.price * p.quantity, 0)
-  const total = subtotal + (shippingCost ?? 0)
+  const total = subtotal + (shippingCost ?? 0) - (discount ?? 0)
 
   return (
     <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 12, padding: "1.25rem" }}>
@@ -39,6 +40,10 @@ export function ProductList({ items, shippingCost }: Props) {
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, paddingTop: 12, borderTop: "0.5px solid var(--color-border)" }}>
         <span style={{ fontSize: 13, color: "var(--color-muted)" }}>Subtotal</span>
         <span style={{ fontSize: 13, color: "var(--color-muted)" }}>${subtotal.toLocaleString("es-AR")}</span>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+        <span style={{ fontSize: 13, color: "var(--color-muted)" }}>Descuento</span>
+        <span style={{ fontSize: 13, color: "var(--color-muted)" }}>-${(discount ?? 0).toLocaleString("es-AR")}</span>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
         <span style={{ fontSize: 13, color: "var(--color-muted)" }}>Envío</span>

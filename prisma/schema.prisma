@@ -23,6 +23,7 @@ model Shipment {
   lastStatusTimestamp   DateTime       @default(now())
   carrier               CarrierType
   shippingCost          Int?
+  discount              Int?
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
   tracking              Tracking[]

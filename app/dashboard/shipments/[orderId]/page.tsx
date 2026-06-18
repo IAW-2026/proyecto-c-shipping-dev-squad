@@ -43,6 +43,7 @@ export default async function PublicTrackingPage({
     estimatedDeliveryDate: shipment.estimatedDeliveryDate?.toISOString() ?? null,
     deliveryDate: shipment.deliveryDate?.toISOString() ?? null,
     shippingCost: shipment.shippingCost ?? null,
+    discount: shipment.discount ?? null,
     createdAt: shipment.createdAt.toISOString(),
     items: shipment.items.map(i => ({
       id: i.id,

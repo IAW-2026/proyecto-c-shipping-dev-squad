@@ -58,7 +58,7 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
           <TrackingHistory tracking={tracking} />
           <ShipmentInfo shipment={shipment} />
         </div>
-        <ProductList items={shipment.items ?? []} shippingCost={shipment.shippingCost} />
+        <ProductList items={shipment.items ?? []} shippingCost={shipment.shippingCost} discount={shipment.discount} />
       </div>
       <style>{`
         @media (min-width: 640px) {
