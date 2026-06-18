@@ -74,24 +74,23 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
     })
 
     if (body.status === "DELIVERED") {
-      const webhookUrl = process.env.DELIVERY_WEBHOOK_URL
-      if (webhookUrl) {
-        try {
-          await fetch(webhookUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+      try {
+        const res= await fetch(
+          `https://zapasya.vercel.app/api/orders/${shipment.orderId}/status`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              "buyer-key": process.env.BUYER_SECRET!,
+            },
             body: JSON.stringify({
-              event: "shipment.delivered",
-              orderId: shipment.orderId,
-              buyerId: shipment.buyerId,
-              deliveredAt: new Date().toISOString(),
+              status: "SHIPPED",
             }),
-          })
-        } catch (webhookError) {
-          console.warn("No se pudo notificar el webhook de entrega:", webhookError)
-        }
-      } else {
-        console.warn("DELIVERY_WEBHOOK_URL no configurada, se omite la notificación")
+          }
+        )
+         console.log("Buyer app response:", res.status, await res.text())
+      } catch (webhookError) {
+        console.warn("No se pudo notificar a la app buyer:", webhookError)
       }
     }
 
