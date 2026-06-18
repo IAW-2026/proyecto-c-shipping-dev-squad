@@ -43,7 +43,13 @@ export default function OperatorTrackingClient({ shipment, role }: Props) {
   return (
     <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
       <div
-        onClick={() => router.back()}
+        onClick={() => {
+          if (role === "admin") {
+            router.push(`/dashboard/shipments/${shipment.orderId}`)
+          } else {
+            router.push("/dashboard/operator")
+          }
+        }}
         style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}
       >
         {backLabel}

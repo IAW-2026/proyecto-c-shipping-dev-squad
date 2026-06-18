@@ -30,7 +30,13 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
     <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
       {!isGuest && (
         <div
-          onClick={() => router.back()}
+          onClick={() => {
+            if (canEdit) {
+              router.push("/dashboard/admin/pedidos")
+            } else {
+              router.push("/dashboard/buyer")
+            }
+          }}
           style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}
         >
           {backLabel}
