@@ -1,11 +1,8 @@
 'use client'
 
-import { useState, useEffect } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import {
-  Shipment, TrackingItem, ShipmentCard, ShipmentFilters,
-  StatusBadge, TrackingHistory, ShipmentInfo, ProductList, ShipmentStepper,
-  ShipmentSearch
+  Shipment, ShipmentCard, ShipmentFilters, ShipmentSearch
 } from "../../components/shipments"
 import { Pagination } from "../../components/Pagination"
 
@@ -17,26 +14,12 @@ interface Props {
 }
 
 export default function BuyerClient({ shipments, total, currentPage, totalPages }: Props) {
-  const [tracking, setTracking] = useState<TrackingItem[]>([])
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   const filtro = searchParams.get("status") || "TODOS"
   const search = searchParams.get("search") ?? ""
-  const selectedOrderId = searchParams.get("orderId")
-  const selected = shipments.find(s => String(s.orderId) === selectedOrderId) ?? null
-
-  useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [selectedOrderId])
-
-  useEffect(() => {
-    if (!selectedOrderId) return
-    fetch(`/api/shipments/${selectedOrderId}/tracking`)
-      .then(r => r.json())
-      .then(setTracking)
-  }, [selectedOrderId])
 
   function updateParams(updates: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString())
@@ -55,48 +38,7 @@ export default function BuyerClient({ shipments, total, currentPage, totalPages 
   }
 
   function openShipment(s: Shipment) {
-    const params = new URLSearchParams(searchParams.toString())
-    params.set("orderId", String(s.orderId))
-    router.push(`${pathname}?${params.toString()}`)
-  }
-
-  function closeShipment() {
-    const params = new URLSearchParams(searchParams.toString())
-    params.delete("orderId")
-    router.push(`${pathname}?${params.toString()}`)
-  }
-
-  if (selected) {
-    const items = selected.items ?? []
-
-    return (
-      <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
-        <div onClick={closeShipment} style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}>
-          ← Volver a mis envíos
-        </div>
-        <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>ORDEN #{selected.orderId}</div>
-        <div style={{ fontSize: 20, fontWeight: 500, color: "var(--foreground)", marginBottom: "1.5rem" }}>
-          Detalle del envío
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }} className="detail-grid">
-          <div style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", borderRadius: 12, padding: "1.25rem" }}>
-            <div style={{ fontSize: 12, fontWeight: 500, color: "var(--color-muted)", marginBottom: 6 }}>Estado del envío</div>
-            <div style={{ marginBottom: 14 }}>
-              <StatusBadge status={selected.status} />
-            </div>
-            <ShipmentStepper status={selected.status} tracking={tracking} />
-            <TrackingHistory tracking={tracking} />
-            <ShipmentInfo shipment={selected} />
-          </div>
-          <ProductList items={items} shippingCost={selected.shippingCost} />
-        </div>
-        <style>{`
-          @media (min-width: 640px) {
-            .detail-grid { grid-template-columns: 1fr 1fr !important; }
-          }
-        `}</style>
-      </div>
-    )
+    router.push(`/dashboard/shipments/${s.orderId}`)
   }
 
   return (
