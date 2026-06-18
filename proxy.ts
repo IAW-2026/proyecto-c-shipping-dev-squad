@@ -9,9 +9,10 @@ const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
 const isAdminRoute = createRouteMatcher(["/dashboard/admin(.*)"]);
 const isOperatorRoute = createRouteMatcher(["/dashboard/operator(.*)"]);
 const isDashboardClientRoute = createRouteMatcher(["/dashboard/buyer(.*)"]);
+const isPublicShipmentRoute = createRouteMatcher(["/dashboard/shipments/:orderId"]);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isPublicApiRoute(req)) {
+  if (isPublicApiRoute(req) || isPublicShipmentRoute(req)) {
     return NextResponse.next();
   }
 

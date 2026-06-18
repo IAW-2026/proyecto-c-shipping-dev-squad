@@ -4,14 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { verifyApiKey } from "@/lib/apiAuth";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ order_id: string }> }) {
-  // Acepta API key (otras apps) o sesión de Clerk (tu propio frontend)
-  if (!verifyApiKey(req)) {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
-  }
-
   try {
     const { order_id } = await params;
     const shipment = await prisma.shipment.findUnique({

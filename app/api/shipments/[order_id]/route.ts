@@ -6,16 +6,12 @@ import { verifyApiKey } from "@/lib/apiAuth";
 const ORDER = ["PENDING", "PREPARING", "IN_TRANSIT", "DELIVERED"]
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ order_id: string }> }) {
-  // 1. Intentamos validar únicamente por Headers (para otras apps o scripts de backend)
+  // Acepta: API Key por header, sesión de Clerk, o acceso público (guest)
+  // El endpoint de tracking es público para permitir ver envíos sin login
   if (!verifyApiKey(req)) {
-    // 2. Si no viene la API Key en los headers, revisamos si es tu propio frontend (sesión de Clerk)
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    await auth(); // inicializa el contexto pero no bloquea si no hay sesión
   }
 
-  // 3. Si pasó alguna de las dos validaciones, continúa el flujo
   try {
     const { order_id } = await params;
     const shipment = await prisma.shipment.findUnique({
