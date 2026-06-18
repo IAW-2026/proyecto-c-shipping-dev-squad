@@ -11,7 +11,9 @@ const isOperatorRoute = createRouteMatcher(["/dashboard/operator(.*)"]);
 const isDashboardClientRoute = createRouteMatcher(["/dashboard/buyer(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isPublicApiRoute(req)) return;
+  if (isPublicApiRoute(req)) {
+    return NextResponse.next();
+  }
 
   if (isProtectedRoute(req)) {
     await auth.protect();
@@ -35,7 +37,7 @@ export default clerkMiddleware(async (auth, req) => {
         const redirect = role === "admin" ? "/dashboard/admin" : "/dashboard/operator"
         return NextResponse.redirect(new URL(redirect, req.url))
     }
-      }
+  }
 });
 
 export const config = {
