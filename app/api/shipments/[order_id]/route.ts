@@ -6,14 +6,16 @@ import { verifyApiKey } from "@/lib/apiAuth";
 const ORDER = ["PENDING", "PREPARING", "IN_TRANSIT", "DELIVERED"]
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ order_id: string }> }) {
-  // Acepta API key (otras apps) o sesión de Clerk (tu propio frontend)
+  // 1. Intentamos validar únicamente por Headers (para otras apps o scripts de backend)
   if (!verifyApiKey(req)) {
+    // 2. Si no viene la API Key en los headers, revisamos si es tu propio frontend (sesión de Clerk)
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
   }
 
+  // 3. Si pasó alguna de las dos validaciones, continúa el flujo
   try {
     const { order_id } = await params;
     const shipment = await prisma.shipment.findUnique({
@@ -24,7 +26,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
     }
     return NextResponse.json(shipment);
   } catch (error) {
-    console.error("Error al obtener el envío:", error)
+    console.error("Error al obtener el envío:", error);
     return NextResponse.json({ error: "Error al obtener el envío" }, { status: 500 });
   }
 }
@@ -73,26 +75,35 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
       }
     })
 
-    if (body.status === "DELIVERED") {
-      try {
-        const res= await fetch(
-          `https://zapasya.vercel.app/api/orders/${shipment.orderId}/status`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              "buyer-key": process.env.BUYER_SECRET!,
-            },
-            body: JSON.stringify({
-              status: "SHIPPED",
-            }),
-          }
-        )
-         console.log("Buyer app response:", res.status, await res.text())
-      } catch (webhookError) {
-        console.warn("No se pudo notificar a la app buyer:", webhookError)
-      }
-    }
+   if (body.status === "DELIVERED") {
+  try {
+    console.log("shipment completo:", shipment)
+    console.log("shipment.orderId:", shipment.orderId)
+
+    const buyerUrl = `https://zapasya.vercel.app/api/orders/${shipment.orderId}/status`
+
+    console.log("Buyer URL:", buyerUrl)
+
+    const res = await fetch(buyerUrl, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "buyer-key": process.env.BUYER_SECRET!,
+      },
+      body: JSON.stringify({
+        status: "SHIPPED",
+      }),
+    })
+
+    const text = await res.text()
+
+    console.log("Buyer status:", res.status)
+    console.log("Buyer body:", text)
+
+  } catch (webhookError) {
+    console.warn("No se pudo notificar a la app buyer:", webhookError)
+  }
+}
 
     return NextResponse.json(shipment)
   } catch (error) {

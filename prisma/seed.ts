@@ -148,7 +148,7 @@ const SHIPMENTS_SEED = [
     ],
   },
   {
-    orderId: 7,
+    orderId: "678aa25e-83c0-4986-a066-4657a4b30bbd",
     buyerId: "user_3EYIfOu17xLwFsFnYQUYiycCyeq",
     status: ShipmentStatus.IN_TRANSIT,
     address: "Av. Corrientes 1234, Buenos Aires",
