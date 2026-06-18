@@ -67,8 +67,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Idempotencia: si ya existe un envío para esta orden, lo devolvemos en vez de crear otro
-    // (requiere que orderId sea @unique en el modelo Shipment de Prisma)
-    const existing = await prisma.shipment.findUnique({ where: { orderId: body.orderId } });
+    const normalizedOrderId = body.orderId.toLowerCase();
+    const existing = await prisma.shipment.findUnique({ where: { orderId: normalizedOrderId } });
     if (existing) {
       return NextResponse.json(existing, { status: 200 });
     }
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
 
     const shipment = await prisma.shipment.create({
       data: {
-        orderId: body.orderId,
+        orderId: normalizedOrderId,
         buyerId: body.buyerId,
         address: body.address,
         carrier: body.carrier,

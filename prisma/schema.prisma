@@ -13,7 +13,7 @@ datasource db {
 
 model Shipment {
   id                    Int            @id @default(autoincrement())
-  orderId               Int            @unique
+  orderId               String         @unique
   buyerId               String
   status                ShipmentStatus @default(PENDING)
   address               String

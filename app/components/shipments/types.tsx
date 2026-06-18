@@ -11,7 +11,7 @@ export type OrderItem = {
 
 export type Shipment = {
   id: number
-  orderId: number
+  orderId: string
   buyerId: string
   status: string
   address: string

@@ -55,7 +55,7 @@ export default function AdminPedidosClient({ shipments, total, currentPage, tota
       fetch(`/api/shipments/${orderId}/tracking`).then(r => r.json()),
     ]).then(([shipmentData, trackingData]) => {
       if (cancelled) return
-      const base = shipments.find(s => s.orderId === Number(orderId)) ?? ({ orderId: Number(orderId) } as unknown as Shipment)
+      const base = shipments.find(s => s.orderId === orderId) ?? ({ orderId } as unknown as Shipment)
       setSelected({ ...base, status: shipmentData.status })
       setTracking(trackingData)
       window.scrollTo({ top: 0, behavior: "instant" })

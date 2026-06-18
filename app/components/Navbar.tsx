@@ -20,8 +20,6 @@ export default function Navbar() {
     localStorage.setItem("theme", dark ? "dark" : "light")
   }, [dark, mounted])
 
-  // Mientras no estamos en el cliente, renderizamos versión neutral
-  // suppressHydrationWarning evita warnings en los atributos del nav
   return (
     <nav
       suppressHydrationWarning

@@ -16,20 +16,15 @@ export default async function OperatorPage({
   const { page, status, search } = await searchParams
   const currentPage = parseInt(page ?? "1")
   const skip = (currentPage - 1) * PAGE_SIZE
-  const parsedSearch = search ? parseInt(search) : undefined
-  const isOutOfRange = parsedSearch !== undefined && parsedSearch > 2147483647
-  const orderId = parsedSearch && !isOutOfRange ? parsedSearch : undefined
-
   const where = {
     ...(status && status !== "TODOS" ? { status: status as any } : {}),
-    ...(orderId ? { orderId } : {}),
-    ...(isOutOfRange ? { id: -1 } : {}),
+    ...(search ? { orderId: { contains: search.toLowerCase() } } : {}),
   }
 
   const [shipments, total] = await Promise.all([
     prisma.shipment.findMany({
       where,
-      orderBy: [{ createdAt: "desc" }, { orderId: "desc" }],
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       include: { items: true },
       skip,
       take: PAGE_SIZE,

@@ -168,7 +168,7 @@ const SHIPMENTS_SEED = [
     ],
   },
   {
-    orderId: 8,
+    orderId: "8a",
     buyerId: "user_3EYIRUdenttnXEHgRSWXw5vSMyb",
     status: ShipmentStatus.PENDING,
     address: "San Martín 456, Rosario",
@@ -252,6 +252,7 @@ async function main() {
     const shipment = await prisma.shipment.create({
       data: {
         ...shipmentData,
+        orderId: String(shipmentData.orderId),
         items: { create: items },
       },
     });

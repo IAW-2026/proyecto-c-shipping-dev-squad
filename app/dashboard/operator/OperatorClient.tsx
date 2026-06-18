@@ -28,7 +28,7 @@ export default function OperatorClient({ shipments, total, currentPage, totalPag
   const filtro = searchParams.get("status") ?? "TODOS"
   const search = searchParams.get("search") ?? ""
   const selectedOrderId = searchParams.get("orderId")
-  const selected = shipments.find(s => String(s.orderId) === selectedOrderId) ?? null
+  const selected = shipments.find(s => s.orderId === selectedOrderId) ?? null
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -64,7 +64,7 @@ export default function OperatorClient({ shipments, total, currentPage, totalPag
 
   function openShipment(s: Shipment) {
     const params = new URLSearchParams(searchParams.toString())
-    params.set("orderId", String(s.orderId))
+    params.set("orderId", s.orderId)
     router.push(`${pathname}?${params.toString()}`)
   }
 

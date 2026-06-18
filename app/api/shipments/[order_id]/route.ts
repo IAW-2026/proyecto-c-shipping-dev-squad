@@ -17,7 +17,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
   try {
     const { order_id } = await params;
     const shipment = await prisma.shipment.findUnique({
-      where: { orderId: parseInt(order_id) },
+      where: { orderId: order_id },
     });
     if (!shipment) {
       return NextResponse.json({ error: "Envío no encontrado" }, { status: 404 });
@@ -45,7 +45,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
     }
 
     const current = await prisma.shipment.findUnique({
-      where: { orderId: parseInt(order_id) },
+      where: { orderId: order_id },
     })
 
     if (!current) {
@@ -57,7 +57,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
     }
 
     const shipment = await prisma.shipment.update({
-      where: { orderId: parseInt(order_id) },
+      where: { orderId: order_id },
       data: {
         status: body.status ?? current.status,
         lastStatusTimestamp: new Date(),

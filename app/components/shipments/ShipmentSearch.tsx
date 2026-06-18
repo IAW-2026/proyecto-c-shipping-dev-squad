@@ -19,13 +19,7 @@ export function ShipmentSearch({ value, onChange }: Props) {
   }, [value])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const clean = e.target.value.replace(/\D/g, "")
-    e.target.value = clean // corrige en el input sin esperar al padre
-
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      onChange(clean)
-    }, 150)
+    onChange(e.target.value)
   }
 
   return (
@@ -34,7 +28,6 @@ export function ShipmentSearch({ value, onChange }: Props) {
       defaultValue={value}
       onChange={handleChange}
       placeholder="Buscar por número de orden exacto..."
-      inputMode="numeric"
       style={{
         width: "100%",
         padding: "8px 12px",
