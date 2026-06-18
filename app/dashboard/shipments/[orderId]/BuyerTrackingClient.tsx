@@ -10,9 +10,10 @@ import {
 interface Props {
   shipment: Shipment
   canEdit?: boolean
+  isGuest?: boolean
 }
 
-export default function BuyerTrackingClient({ shipment, canEdit = false }: Props) {
+export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest = false }: Props) {
   const [tracking, setTracking] = useState<TrackingItem[]>([])
   const router = useRouter()
 
@@ -27,12 +28,14 @@ export default function BuyerTrackingClient({ shipment, canEdit = false }: Props
 
   return (
     <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
-      <div
-        onClick={() => router.back()}
-        style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}
-      >
-        {backLabel}
-      </div>
+      {!isGuest && (
+        <div
+          onClick={() => router.back()}
+          style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}
+        >
+          {backLabel}
+        </div>
+      )}
       <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>ORDEN #{shipment.orderId}</div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem", flexWrap: "wrap", gap: 8 }}>
         <div style={{ fontSize: 20, fontWeight: 500, color: "var(--foreground)" }}>Detalle del envío</div>

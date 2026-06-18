@@ -1,5 +1,4 @@
 import { auth } from "@clerk/nextjs/server"
-import { redirect } from "next/navigation"
 import { notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { Suspense } from "react"
@@ -14,13 +13,13 @@ export default async function PublicTrackingPage({
   searchParams: Promise<{ mode?: string }>
 }) {
   const { userId, sessionClaims } = await auth()
-  if (!userId) redirect("/sign-in")
 
-  const role =
-    (sessionClaims?.metadata as any)?.role ??
-    (sessionClaims?.publicMetadata as any)?.role ??
-    (sessionClaims as any)?.role ??
-    null
+  const role = userId
+    ? ((sessionClaims?.metadata as any)?.role ??
+       (sessionClaims?.publicMetadata as any)?.role ??
+       (sessionClaims as any)?.role ??
+       null)
+    : null
 
   const { orderId } = await params
   const { mode } = await searchParams
@@ -79,7 +78,7 @@ export default async function PublicTrackingPage({
   // Admin además recibe la prop canEdit para mostrar el botón Modificar
   return (
     <Suspense fallback={null}>
-      <BuyerTrackingClient shipment={serialized} canEdit={role === "admin"} />
+      <BuyerTrackingClient shipment={serialized} canEdit={role === "admin"} isGuest={!userId} />
     </Suspense>
   )
 }
