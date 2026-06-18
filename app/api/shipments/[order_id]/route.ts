@@ -59,6 +59,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
       data: {
         status: body.status ?? current.status,
         lastStatusTimestamp: new Date(),
+        discount: body.discount,
+
       },
     })
 

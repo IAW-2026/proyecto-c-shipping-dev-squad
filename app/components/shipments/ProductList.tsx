@@ -41,10 +41,12 @@ export function ProductList({ items, shippingCost, discount }: Props) {
         <span style={{ fontSize: 13, color: "var(--color-muted)" }}>Subtotal</span>
         <span style={{ fontSize: 13, color: "var(--color-muted)" }}>${subtotal.toLocaleString("es-AR")}</span>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-        <span style={{ fontSize: 13, color: "var(--color-muted)" }}>Descuento</span>
-        <span style={{ fontSize: 13, color: "var(--color-muted)" }}>-${(discount ?? 0).toLocaleString("es-AR")}</span>
-      </div>
+      {discount ? (
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+          <span style={{ fontSize: 13, color: "var(--color-muted)" }}>Descuento</span>
+          <span style={{ fontSize: 13, color: "var(--color-muted)" }}>-${discount.toLocaleString("es-AR")}</span>
+        </div>
+      ) : null}
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
         <span style={{ fontSize: 13, color: "var(--color-muted)" }}>Envío</span>
         <span style={{ fontSize: 13, color: shippingCost === 0 ? "#15803d" : "var(--color-muted)" }}>
