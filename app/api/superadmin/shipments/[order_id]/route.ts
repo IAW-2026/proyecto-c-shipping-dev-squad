@@ -4,9 +4,19 @@ import { verifyApiKey } from "@/lib/apiAuth"
 
 const ORDER = ["PENDING", "PREPARING", "IN_TRANSIT", "DELIVERED"]
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, PATCH, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, x-api-key",
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders })
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ order_id: string }> }) {
   if (!verifyApiKey(req)) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+    return NextResponse.json({ error: "No autorizado" }, { status: 401, headers: corsHeaders })
   }
 
   try {
@@ -17,19 +27,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
     })
 
     if (!shipment) {
-      return NextResponse.json({ error: "Envío no encontrado" }, { status: 404 })
+      return NextResponse.json({ error: "Envío no encontrado" }, { status: 404, headers: corsHeaders })
     }
 
-    return NextResponse.json(shipment)
+    return NextResponse.json(shipment, { headers: corsHeaders })
   } catch (error) {
     console.error("Error al obtener el envío:", error)
-    return NextResponse.json({ error: "Error al obtener el envío" }, { status: 500 })
+    return NextResponse.json({ error: "Error al obtener el envío" }, { status: 500, headers: corsHeaders })
   }
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ order_id: string }> }) {
   if (!verifyApiKey(req)) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+    return NextResponse.json({ error: "No autorizado" }, { status: 401, headers: corsHeaders })
   }
 
   try {
@@ -37,11 +47,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
     const body = await req.json()
 
     if (!body.status) {
-      return NextResponse.json({ error: "El campo status es requerido" }, { status: 400 })
+      return NextResponse.json({ error: "El campo status es requerido" }, { status: 400, headers: corsHeaders })
     }
 
     if (!ORDER.includes(body.status)) {
-      return NextResponse.json({ error: "Estado inválido" }, { status: 400 })
+      return NextResponse.json({ error: "Estado inválido" }, { status: 400, headers: corsHeaders })
     }
 
     const current = await prisma.shipment.findUnique({
@@ -49,11 +59,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
     })
 
     if (!current) {
-      return NextResponse.json({ error: "Envío no encontrado" }, { status: 404 })
+      return NextResponse.json({ error: "Envío no encontrado" }, { status: 404, headers: corsHeaders })
     }
 
     if (ORDER.indexOf(body.status) < ORDER.indexOf(current.status)) {
-      return NextResponse.json({ error: "No podés retroceder el estado de un envío" }, { status: 400 })
+      return NextResponse.json({ error: "No podés retroceder el estado de un envío" }, { status: 400, headers: corsHeaders })
     }
 
     const shipment = await prisma.shipment.update({
@@ -90,9 +100,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
       }
     }
 
-    return NextResponse.json(shipment)
+    return NextResponse.json(shipment, { headers: corsHeaders })
   } catch (error) {
     console.error("Error al actualizar el envío:", error)
-    return NextResponse.json({ error: "Error al actualizar el envío" }, { status: 500 })
+    return NextResponse.json({ error: "Error al actualizar el envío" }, { status: 500, headers: corsHeaders })
   }
 }

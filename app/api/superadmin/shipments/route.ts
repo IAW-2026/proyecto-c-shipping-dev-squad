@@ -4,9 +4,19 @@ import { verifyApiKey } from "@/lib/apiAuth"
 
 const PAGE_SIZE = 20
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, PATCH, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, x-api-key",
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders })
+}
+
 export async function GET(req: NextRequest) {
   if (!verifyApiKey(req)) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+    return NextResponse.json({ error: "No autorizado" }, { status: 401, headers: corsHeaders })
   }
 
   try {
@@ -27,14 +37,17 @@ export async function GET(req: NextRequest) {
       prisma.shipment.count({ where }),
     ])
 
-    return NextResponse.json({
-      shipments,
-      total,
-      page,
-      totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
-    })
+    return NextResponse.json(
+      {
+        shipments,
+        total,
+        page,
+        totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+      },
+      { headers: corsHeaders }
+    )
   } catch (error) {
     console.error("Error al listar envíos:", error)
-    return NextResponse.json({ error: "Error al listar envíos" }, { status: 500 })
+    return NextResponse.json({ error: "Error al listar envíos" }, { status: 500, headers: corsHeaders })
   }
 }
