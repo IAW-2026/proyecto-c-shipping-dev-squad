@@ -46,11 +46,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
     const { order_id } = await params
     const body = await req.json()
 
-    if (!body.status) {
-      return NextResponse.json({ error: "El campo status es requerido" }, { status: 400, headers: corsHeaders })
+    if (!body.status && !body.description) {
+      return NextResponse.json({ error: "Debés enviar status o description" }, { status: 400, headers: corsHeaders })
     }
 
-    if (!ORDER.includes(body.status)) {
+    if (body.status && !ORDER.includes(body.status)) {
       return NextResponse.json({ error: "Estado inválido" }, { status: 400, headers: corsHeaders })
     }
 
@@ -62,22 +62,24 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
       return NextResponse.json({ error: "Envío no encontrado" }, { status: 404, headers: corsHeaders })
     }
 
-    if (ORDER.indexOf(body.status) < ORDER.indexOf(current.status)) {
+    if (body.status && ORDER.indexOf(body.status) < ORDER.indexOf(current.status)) {
       return NextResponse.json({ error: "No podés retroceder el estado de un envío" }, { status: 400, headers: corsHeaders })
     }
 
-    const shipment = await prisma.shipment.update({
-      where: { orderId: order_id },
-      data: {
-        status: body.status,
-        lastStatusTimestamp: new Date(),
-      },
-    })
+    const shipment = body.status
+      ? await prisma.shipment.update({
+          where: { orderId: order_id },
+          data: {
+            status: body.status,
+            lastStatusTimestamp: new Date(),
+          },
+        })
+      : current
 
     await prisma.tracking.create({
       data: {
         shipmentId: shipment.id,
-        status: body.status,
+        status: body.status ?? current.status,
         location: "",
         description: body.description ?? null,
       },
