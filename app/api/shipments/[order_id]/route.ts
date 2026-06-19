@@ -73,39 +73,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
       }
     })
 
-   if (body.status === "DELIVERED") {
-  try {
-    console.log("shipment completo:", shipment)
-    console.log("shipment.orderId:", shipment.orderId)
+    if (body.status === "DELIVERED") {
+      try {
+        const buyerUrl = `https://zapasya.vercel.app/api/orders/${shipment.orderId}/status`
 
-    const buyerUrl = `https://zapasya.vercel.app/api/orders/${shipment.orderId}/status`
+        await fetch(buyerUrl, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "buyer-key": process.env.BUYER_SECRET!,
+          },
+          body: JSON.stringify({
+            status: "SHIPPED",
+          }),
+        })
 
-    console.log("Buyer URL:", buyerUrl)
-
-    const res = await fetch(buyerUrl, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "buyer-key": process.env.BUYER_SECRET!,
-      },
-      body: JSON.stringify({
-        status: "SHIPPED",
-      }),
-    })
-
-    const text = await res.text()
-
-    console.log("Buyer status:", res.status)
-    console.log("Buyer body:", text)
-
-  } catch (webhookError) {
-    console.warn("No se pudo notificar a la app buyer:", webhookError)
-  }
-}
-
-    return NextResponse.json(shipment)
-  } catch (error) {
-    console.error("Error al actualizar el envío:", error)
-    return NextResponse.json({ error: "Error al actualizar el envío" }, { status: 500 })
-  }
-}
+      } catch (webhookError) {
+        console.warn("No se pudo notificar a la app buyer:", webhookError)
+      }
+    }
