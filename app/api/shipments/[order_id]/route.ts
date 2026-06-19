@@ -60,7 +60,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
         status: body.status ?? current.status,
         lastStatusTimestamp: new Date(),
         discount: body.discount,
-
       },
     })
 
@@ -73,7 +72,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
       }
     })
 
-    if (body.status === "DELIVERED") {
+    const BUYER_STATUS_MAP: Record<string, string> = {
+      IN_TRANSIT: "SHIPPED",
+      DELIVERED: "DELIVERED",
+    }
+
+    if (body.status && BUYER_STATUS_MAP[body.status]) {
       try {
         const buyerUrl = `https://zapasya.vercel.app/api/orders/${shipment.orderId}/status`
 
@@ -84,7 +88,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
             "buyer-key": process.env.BUYER_SECRET!,
           },
           body: JSON.stringify({
-            status: "SHIPPED",
+            status: BUYER_STATUS_MAP[body.status],
           }),
         })
 
@@ -92,3 +96,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
         console.warn("No se pudo notificar a la app buyer:", webhookError)
       }
     }
+
+    return NextResponse.json(shipment)
+  } catch (error) {
+    console.error("Error al actualizar el envío:", error)
+    return NextResponse.json({ error: "Error al actualizar el envío" }, { status: 500 })
+  }
+}
