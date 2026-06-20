@@ -6,6 +6,7 @@ const STATUS_ORDER = ["PENDING", "PREPARING", "IN_TRANSIT", "DELIVERED"]
 const CARRIERS = ["MAIL", "PICKUP"]
 const STALE_THRESHOLD_DAYS = 5
 const MAX_LIST_ITEMS = 10
+const MAX_DESTINATIONS = 5
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,19 +37,57 @@ function monthKey(d: Date) {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`
 }
 
+// El campo `address` tiene formato "Calle, Ciudad, Provincia".
+// La provincia es siempre el último segmento separado por comas.
+function extractProvince(address: string): string | null {
+  const parts = address.split(",").map((p) => p.trim()).filter(Boolean)
+  if (parts.length === 0) return null
+  return parts[parts.length - 1]
+}
+
+// Valida "YYYY-MM" y devuelve el rango [inicio, fin) del mes en UTC.
+// Devuelve null si el param no vino o es inválido (se interpreta como "sin filtro").
+function parseMonthRange(monthParam: string | null): { start: Date; end: Date } | null {
+  if (!monthParam) return null
+  const match = /^(\d{4})-(\d{2})$/.exec(monthParam)
+  if (!match) return null
+
+  const year = Number(match[1])
+  const month = Number(match[2]) // 1-12
+  if (month < 1 || month > 12) return null
+
+  const start = new Date(Date.UTC(year, month - 1, 1))
+  const end = new Date(Date.UTC(year, month, 1))
+  return { start, end }
+}
+
 export async function GET(req: NextRequest) {
   if (!verifyApiKey(req)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401, headers: corsHeaders })
   }
 
   try {
+    const monthParam = req.nextUrl.searchParams.get("month")
+    const monthRange = parseMonthRange(monthParam)
+
+    if (monthParam && !monthRange) {
+      return NextResponse.json(
+        { error: "Parámetro 'month' inválido. Formato esperado: YYYY-MM" },
+        { status: 400, headers: corsHeaders }
+      )
+    }
+
     const shipments = await prisma.shipment.findMany({
+      where: monthRange
+        ? { createdAt: { gte: monthRange.start, lt: monthRange.end } }
+        : undefined,
       select: {
         orderId: true,
         status: true,
         carrier: true,
         shippingCost: true,
         discount: true,
+        address: true,
         createdAt: true,
         deliveryDate: true,
         estimatedDeliveryDate: true,
@@ -185,17 +224,17 @@ export async function GET(req: NextRequest) {
       .sort((a, b) => b.daysSinceUpdate - a.daysSinceUpdate)
       .slice(0, MAX_LIST_ITEMS)
 
-    // ---- Entregas fuera de SLA ----
-    const lateDeliveries = deliveredWithDates
-      .filter((s) => s.estimatedDeliveryDate && s.deliveryDate! > s.estimatedDeliveryDate)
-      .map((s) => ({
-        orderId: s.orderId,
-        estimatedDeliveryDate: s.estimatedDeliveryDate!.toISOString(),
-        deliveryDate: s.deliveryDate!.toISOString(),
-        daysLate: Math.ceil(daysBetween(s.estimatedDeliveryDate!, s.deliveryDate!)),
-      }))
-      .sort((a, b) => b.daysLate - a.daysLate)
-      .slice(0, MAX_LIST_ITEMS)
+    // ---- Provincias con más envíos (extraído del campo address) ----
+    const provinceMap = new Map<string, number>()
+    for (const s of shipments) {
+      const province = extractProvince(s.address)
+      if (!province) continue
+      provinceMap.set(province, (provinceMap.get(province) ?? 0) + 1)
+    }
+    const topDestinations = Array.from(provinceMap.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, MAX_DESTINATIONS)
 
     return NextResponse.json(
       {
@@ -216,7 +255,7 @@ export async function GET(req: NextRequest) {
           discountUsageRate,
         },
         staleShipments,
-        lateDeliveries,
+        topDestinations,
       },
       { headers: corsHeaders }
     )
