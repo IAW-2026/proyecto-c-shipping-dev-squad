@@ -199,8 +199,8 @@ export async function GET(req: NextRequest) {
 
     const stageTimes = [
       { stage: "Pendiente → Preparación", avgDays: avg(pendingToPreparing) },
-      { stage: "Preparación → En tránsito", avgDays: avg(preparingToTransit) },
-      { stage: "En tránsito → Entregado", avgDays: avg(transitToDelivered) },
+      { stage: "Preparación → En camino", avgDays: avg(preparingToTransit) },
+      { stage: "En camino → Entregado", avgDays: avg(transitToDelivered) },
     ]
 
     // ---- Costos de envío ----
