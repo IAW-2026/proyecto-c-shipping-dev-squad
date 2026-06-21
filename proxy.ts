@@ -1,19 +1,35 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { verifyShipmentToken } from "@/lib/shipmentToken";
 
 const isPublicApiRoute = createRouteMatcher([
   "/api/shipments(.*)",
 ]);
 
+const isShipmentDetailRoute = createRouteMatcher(["/dashboard/shipments/:orderId"]);
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
 const isAdminRoute = createRouteMatcher(["/dashboard/admin(.*)"]);
 const isOperatorRoute = createRouteMatcher(["/dashboard/operator(.*)"]);
 const isDashboardClientRoute = createRouteMatcher(["/dashboard/buyer(.*)"]);
-const isPublicShipmentRoute = createRouteMatcher(["/dashboard/shipments/:orderId"]);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isPublicApiRoute(req) || isPublicShipmentRoute(req)) {
+  if (isPublicApiRoute(req)) {
     return NextResponse.next();
+  }
+
+  // Si viene un token firmado válido de la app buyer, dejamos pasar sin
+  // pedir sesión de Clerk. Si no hay token o no es válido, seguimos abajo
+  // con el flujo normal (auth.protect()).
+  if (isShipmentDetailRoute(req)) {
+    const token = req.nextUrl.searchParams.get("token");
+    const orderId = req.nextUrl.pathname.split("/").pop() ?? "";
+
+    if (token) {
+      const verified = await verifyShipmentToken(token, orderId);
+      if (verified) {
+        return NextResponse.next();
+      }
+    }
   }
 
   if (isProtectedRoute(req)) {
