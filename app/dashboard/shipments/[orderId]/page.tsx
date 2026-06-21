@@ -4,25 +4,19 @@ import { prisma } from "@/lib/prisma"
 import { Suspense } from "react"
 import BuyerTrackingClient from "./BuyerTrackingClient"
 import OperatorTrackingClient from "./OperatorTrackingClient"
+import { verifyShipmentToken } from "@/lib/shipmentToken"
 
 export default async function PublicTrackingPage({
   params,
   searchParams,
 }: {
   params: Promise<{ orderId: string }>
-  searchParams: Promise<{ mode?: string }>
+  searchParams: Promise<{ mode?: string; token?: string }>
 }) {
   const { userId, sessionClaims } = await auth()
 
-  const role = userId
-    ? ((sessionClaims?.metadata as any)?.role ??
-       (sessionClaims?.publicMetadata as any)?.role ??
-       (sessionClaims as any)?.role ??
-       null)
-    : null
-
   const { orderId } = await params
-  const { mode } = await searchParams
+  const { mode, token } = await searchParams
   const id = orderId
 
   const shipment = await prisma.shipment.findUnique({
@@ -31,6 +25,24 @@ export default async function PublicTrackingPage({
   })
 
   if (!shipment) notFound()
+
+  // Si no hay sesión de Clerk, probamos con el token que mandó la app buyer.
+  // Además de validar firma y vencimiento, chequeamos que el userId del
+  // token sea realmente el dueño de este envío (defensa extra).
+  let tokenUserId: string | null = null
+  if (!userId && token) {
+    const verified = await verifyShipmentToken(token, id)
+    if (verified && verified.userId === shipment.buyerId) {
+      tokenUserId = verified.userId
+    }
+  }
+
+  const role = userId
+    ? ((sessionClaims?.metadata as any)?.role ??
+       (sessionClaims?.publicMetadata as any)?.role ??
+       (sessionClaims as any)?.role ??
+       null)
+    : null
 
   const serialized = {
     id: shipment.id,
@@ -75,11 +87,15 @@ export default async function PublicTrackingPage({
     )
   }
 
-  // Admin sin modo edición y buyer ven la vista de detalle
-  // Admin además recibe la prop canEdit para mostrar el botón Modificar
+  // Admin sin modo edición, buyer logueado, y buyer que llega con token
+  // válido ven la vista de detalle. Admin además recibe canEdit.
   return (
     <Suspense fallback={null}>
-      <BuyerTrackingClient shipment={serialized} canEdit={role === "admin"} isGuest={!userId} />
+      <BuyerTrackingClient
+        shipment={serialized}
+        canEdit={role === "admin"}
+        isGuest={!userId && !tokenUserId}
+      />
     </Suspense>
   )
 }
