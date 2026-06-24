@@ -7,8 +7,8 @@ import axios from "axios";
 
 const ORS_API_KEY = process.env.ORS_API_KEY!;
 
-const CARRIER_MAP: Record<string, "MAIL" | "PICKUP"> = {
-  delivery: "MAIL",
+const CARRIER_MAP: Record<string, "DELIVERY" | "PICKUP"> = {
+  delivery: "DELIVERY",
   pickup: "PICKUP",
 }
 
@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
+    console.log("Body recibido:", JSON.stringify(body));
 
     if (!body.orderId || !body.buyerId || !body.address || !body.carrier || body.shippingCost === undefined || body.shippingCost === null) {
       return NextResponse.json(
