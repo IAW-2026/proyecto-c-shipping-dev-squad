@@ -7,8 +7,8 @@ import axios from "axios";
 
 const ORS_API_KEY = process.env.ORS_API_KEY!;
 
-const CARRIER_MAP: Record<string, "DELIVERY" | "PICKUP"> = {
-  delivery: "DELIVERY",
+const CARRIER_MAP: Record<string, "MAIL" | "PICKUP"> = {
+  delivery: "MAIL",
   pickup: "PICKUP",
 }
 
