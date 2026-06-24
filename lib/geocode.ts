@@ -1,25 +1,29 @@
 import axios from 'axios';
 
-const ORS_API_KEY = process.env.ORS_API_KEY!;
-
+// Nominatim (OpenStreetMap) — no requiere API key y resuelve mejor
+// direcciones en Argentina que el geocoder de OpenRouteService.
 export async function geocodeAddress(address: string): Promise<{ lat: number; lng: number }> {
-  const response = await axios.get(
-    'https://api.openrouteservice.org/geocode/search',
-    {
-      params: {
-        api_key: ORS_API_KEY,
-        text: address,
-        size: 1,
-      }
-    }
-  );
+  const response = await axios.get('https://nominatim.openstreetmap.org/search', {
+    params: {
+      q: address,
+      format: 'json',
+      limit: 1,
+      countrycodes: 'ar',
+    },
+    headers: {
+      // Nominatim exige un User-Agent identificatorio
+      'User-Agent': 'ZapasYA-Shipping/1.0',
+    },
+  });
 
-  const features = response.data.features;
+  const results = response.data;
 
-  if (!features || features.length === 0) {
+  if (!results || results.length === 0) {
     throw new Error(`No se encontraron coordenadas para: "${address}"`);
   }
 
-  const [lng, lat] = features[0].geometry.coordinates;
-  return { lat, lng };
+  return {
+    lat: parseFloat(results[0].lat),
+    lng: parseFloat(results[0].lon),
+  };
 }

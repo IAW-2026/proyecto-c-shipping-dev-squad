@@ -7,10 +7,15 @@ import axios from "axios";
 
 const ORS_API_KEY = process.env.ORS_API_KEY!;
 
+const CARRIER_MAP: Record<string, "MAIL" | "PICKUP"> = {
+  delivery: "MAIL",
+  pickup: "PICKUP",
+}
+
 function nextWeekday(date: Date): Date {
-  const day = date.getDay(); // 0 = domingo, 6 = sábado
-  if (day === 6) date.setDate(date.getDate() + 2); // sábado → lunes
-  if (day === 0) date.setDate(date.getDate() + 1); // domingo → lunes
+  const day = date.getDay();
+  if (day === 6) date.setDate(date.getDate() + 2);
+  if (day === 0) date.setDate(date.getDate() + 1);
   return date;
 }
 
@@ -35,23 +40,19 @@ async function calculateShippingTime(
   );
 
   const durationSeconds = response.data.routes[0].segments[0].duration;
-  const PREP_SECONDS = 60 * 60; // 1 hora de preparación
+  const PREP_SECONDS = 60 * 60;
   const BUFFER_DAYS = 2;
 
   const estimatedDeliveryDate = new Date();
   estimatedDeliveryDate.setSeconds(
     estimatedDeliveryDate.getSeconds() + durationSeconds + PREP_SECONDS
   );
-
-  // Agregar 2 días de buffer
   estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + BUFFER_DAYS);
 
-  // Asegurarse que caiga en día de semana
   return nextWeekday(estimatedDeliveryDate);
 }
 
 export async function POST(req: NextRequest) {
-  // Solo apps externas autenticadas con API key pueden crear envíos
   if (!verifyApiKey(req)) {
     return NextResponse.json({ error: "API key inválida o ausente" }, { status: 401 });
   }
@@ -62,6 +63,15 @@ export async function POST(req: NextRequest) {
     if (!body.orderId || !body.buyerId || !body.address || !body.carrier || body.shippingCost === undefined || body.shippingCost === null) {
       return NextResponse.json(
         { error: "Faltan campos obligatorios: orderId, buyerId, address, carrier, shippingCost" },
+        { status: 400 }
+      );
+    }
+
+    // Mapeo de valores del buyer ("delivery" / "pickup") al enum interno
+    const carrier = CARRIER_MAP[body.carrier.toLowerCase()]
+    if (!carrier) {
+      return NextResponse.json(
+        { error: "Valor de carrier inválido. Se esperaba 'delivery' o 'pickup'" },
         { status: 400 }
       );
     }
@@ -111,7 +121,7 @@ export async function POST(req: NextRequest) {
         orderId: normalizedOrderId,
         buyerId: body.buyerId,
         address: body.address,
-        carrier: body.carrier,
+        carrier,
         shippingCost: body.shippingCost,
         estimatedDeliveryDate,
         items: {
@@ -135,7 +145,6 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  // Acepta API key (otras apps) o sesión de Clerk (tu propio frontend)
   if (!verifyApiKey(req)) {
     const { userId } = await auth();
     if (!userId) {
