@@ -68,17 +68,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Mapeo de valores del buyer ("delivery" / "pickup") al enum interno
+    // Mapeo de valores del buyer al enum interno
     const carrier = CARRIER_MAP[body.carrier.toLowerCase()]
     if (!carrier) {
       return NextResponse.json(
-        { error: "Valor de carrier inválido. Se esperaba 'delivery' o 'pickup'" },
+        { error: "Valor de carrier inválido. Se esperaba 'mail' o 'pickup'" },
         { status: 400 }
       );
     }
 
-    // Idempotencia: si ya existe un envío para esta orden, lo devolvemos en vez de crear otro
     const normalizedOrderId = body.orderId.toLowerCase();
+
+    // Idempotencia: si ya existe un envío para esta orden, lo devolvemos
     const existing = await prisma.shipment.findUnique({ where: { orderId: normalizedOrderId } });
     if (existing) {
       return NextResponse.json(existing, { status: 200 });
@@ -108,7 +109,6 @@ export async function POST(req: NextRequest) {
           })
         );
 
-        // Tomar la fecha más lejana entre todos los orígenes
         estimatedDeliveryDate = deliveryDates.reduce((latest, current) =>
           current > latest ? current : latest
         );
@@ -117,26 +117,38 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const shipment = await prisma.shipment.create({
-      data: {
-        orderId: normalizedOrderId,
-        buyerId: body.buyerId,
-        address: body.address,
-        carrier,
-        shippingCost: body.shippingCost,
-        estimatedDeliveryDate,
-        items: {
-          create: body.items ?? [],
-        },
-        tracking: {
-          create: {
-            location: "Centro de distribución",
-            status: "PENDING",
-            description: "Envío registrado",
+    const trackingDescription = carrier === "MAIL" ? "Envío a domicilio" : "Retiro en sucursal";
+
+    let shipment
+    try {
+      shipment = await prisma.shipment.create({
+        data: {
+          orderId: normalizedOrderId,
+          buyerId: body.buyerId,
+          address: body.address,
+          carrier,
+          shippingCost: body.shippingCost,
+          estimatedDeliveryDate,
+          items: {
+            create: body.items ?? [],
+          },
+          tracking: {
+            create: {
+              location: "Centro de distribución",
+              status: "PENDING",
+              description: trackingDescription,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (createError: any) {
+      if (createError.code === "P2002") {
+        // Race condition: otro request creó el envío al mismo tiempo
+        const existing = await prisma.shipment.findUnique({ where: { orderId: normalizedOrderId } });
+        return NextResponse.json(existing, { status: 200 });
+      }
+      throw createError;
+    }
 
     return NextResponse.json(shipment, { status: 201 });
   } catch (error) {
