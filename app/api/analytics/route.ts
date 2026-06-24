@@ -43,6 +43,10 @@ function extractCity(address: string): string | null {
   return parts[parts.length - 1]
 }
 
+function normalizeCity(s: string): string {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim()
+}
+
 function parseMonthRange(monthParam: string | null): { start: Date; end: Date } | null {
   if (!monthParam) return null
   const match = /^(\d{4})-(\d{2})$/.exec(monthParam)
@@ -221,14 +225,18 @@ export async function GET(req: NextRequest) {
       .slice(0, MAX_LIST_ITEMS)
 
     // ---- Ciudades con más envíos (extraído del campo address) ----
-    const cityMap = new Map<string, number>()
+    // Normaliza tildes y mayúsculas para agrupar variantes del mismo nombre,
+    // pero conserva el label original para mostrarlo en pantalla.
+    const cityMap = new Map<string, { name: string; count: number }>()
     for (const s of shipments) {
       const city = extractCity(s.address)
       if (!city) continue
-      cityMap.set(city, (cityMap.get(city) ?? 0) + 1)
+      const key = normalizeCity(city)
+      const entry = cityMap.get(key) ?? { name: city, count: 0 }
+      entry.count += 1
+      cityMap.set(key, entry)
     }
-    const topDestinations = Array.from(cityMap.entries())
-      .map(([name, count]) => ({ name, count }))
+    const topDestinations = Array.from(cityMap.values())
       .sort((a, b) => b.count - a.count)
       .slice(0, MAX_DESTINATIONS)
 

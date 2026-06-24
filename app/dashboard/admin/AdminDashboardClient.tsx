@@ -8,6 +8,10 @@ interface Props {
   shipments: Shipment[]
 }
 
+function normalizeLocation(s: string): string {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim()
+}
+
 function getAvailableMonths(shipments: Shipment[]): { year: number; month: number }[] {
   const set = new Set<string>()
   shipments.forEach(s => {
@@ -91,15 +95,17 @@ export default function AdminDashboardClient({ shipments }: Props) {
   const maxRecent = Math.max(...recentShipments.map(d => d.count), 1)
   const deliveryRate = stats.total ? Math.round((stats.delivered / stats.total) * 100) : 0
 
-  const locationCounts = filtered.reduce<Record<string, number>>((acc, s) => {
+  const locationCounts = filtered.reduce<Record<string, { label: string; count: number }>>((acc, s) => {
     const parts = s.address.split(",").map(p => p.trim()).filter(Boolean)
-    const location = parts[parts.length - 1] || "Desconocido"
-    acc[location] = (acc[location] ?? 0) + 1
+    const raw = parts[parts.length - 1] || "Desconocido"
+    const key = normalizeLocation(raw)
+    if (!acc[key]) acc[key] = { label: raw, count: 0 }
+    acc[key].count += 1
     return acc
   }, {})
 
-  const locationData = Object.entries(locationCounts).sort((a, b) => b[1] - a[1]).slice(0, 8)
-  const maxLocation = Math.max(...locationData.map(([, v]) => v), 1)
+  const locationData = Object.values(locationCounts).sort((a, b) => b.count - a.count).slice(0, 8)
+  const maxLocation = Math.max(...locationData.map(v => v.count), 1)
 
   return (
     <div style={{ width: "92%", maxWidth: 1400, margin: "0 auto", padding: "1.5rem 0" }}>
@@ -183,12 +189,12 @@ export default function AdminDashboardClient({ shipments }: Props) {
           <div style={{ fontSize: 13, color: "var(--color-muted)", padding: "1rem 0" }}>Sin datos de destino</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {locationData.map(([location, count]) => {
+            {locationData.map(({ label, count }) => {
               const pct = Math.round((count / maxLocation) * 100)
               return (
-                <div key={location}>
+                <div key={label}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 5 }}>
-                    <span style={{ color: "var(--foreground)", fontWeight: 500 }}>{location}</span>
+                    <span style={{ color: "var(--foreground)", fontWeight: 500 }}>{label}</span>
                     <span style={{ color: "var(--color-muted)" }}>{count} envío{count !== 1 ? "s" : ""}</span>
                   </div>
                   <div style={{ height: 10, background: "var(--color-surface-alt)", borderRadius: 99, overflow: "hidden" }}>
