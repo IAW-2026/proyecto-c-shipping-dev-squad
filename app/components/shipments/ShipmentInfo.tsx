@@ -6,7 +6,7 @@ type Props = {
 
 function splitDirecciones(raw: string): string[] {
   const dirs = raw
-    .split(/,\s*(?=Av\.|Calle|Ruta|Bv\.|Blvd\.|Pje\.|Pasaje)/)
+    .split(/,\s*(?=(?:[A-Za-z\u00C0-\u024F]+\.?\s+)+\d)/)
     .map(d => d.trim())
     .filter(Boolean)
   return dirs.length > 0 ? dirs : [raw.trim()]
