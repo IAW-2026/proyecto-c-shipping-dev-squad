@@ -19,6 +19,14 @@ function nextWeekday(date: Date): Date {
   return date;
 }
 
+function splitDirecciones(raw: string): string[] {
+  const dirs = raw
+    .split(/,\s*(?=[A-ZÁÉÍÓÚÑ][a-záéíóúñA-ZÁÉÍÓÚÑ.]+\s+\d)/)
+    .map(d => d.trim())
+    .filter(Boolean)
+  return dirs.length > 0 ? dirs : [raw.trim()]
+}
+
 async function calculateShippingTime(
   origin: { lat: number; lng: number },
   destination: { lat: number; lng: number }
@@ -88,14 +96,13 @@ export async function POST(req: NextRequest) {
     estimatedDeliveryDate = nextWeekday(estimatedDeliveryDate);
 
     const itemsWithOrigin: string[] = [
-      ...new Set(
+      ...new Set<string>(
         (body.items ?? [])
-          .map((item: { productOriginAddress?: string }) => item.productOriginAddress)
-          .filter(Boolean) as string[]
+          .flatMap((item: { productOriginAddress?: string }) =>
+            item.productOriginAddress ? splitDirecciones(item.productOriginAddress) : []
+          )
       ),
     ];
-    console.log("📦 itemsWithOrigin:", itemsWithOrigin);
-    console.log("📍 destination address:", body.address);
 
     if (itemsWithOrigin.length > 0 && body.address) {
       try {
@@ -112,7 +119,7 @@ export async function POST(req: NextRequest) {
           current > latest ? current : latest
         );
       } catch (geoError) {
-          console.error("❌ Error en cálculo de ruta:", geoError);
+        console.error("❌ Error en cálculo de ruta:", geoError);
       }
     }
 
