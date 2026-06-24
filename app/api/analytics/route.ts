@@ -31,29 +31,25 @@ function avg(values: number[]) {
   return round1(values.reduce((sum, v) => sum + v, 0) / values.length)
 }
 
-// Agrupa por mes en formato "YYYY-MM" (el front-end se encarga de
-// formatear el label legible con date-fns, igual que hace feedback)
 function monthKey(d: Date) {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`
 }
 
-// El campo `address` tiene formato "Calle, Ciudad, Provincia".
-// La provincia es siempre el último segmento separado por comas.
-function extractProvince(address: string): string | null {
+// El campo `address` tiene formato "Calle, Ciudad".
+// La ciudad es siempre el último segmento separado por comas.
+function extractCity(address: string): string | null {
   const parts = address.split(",").map((p) => p.trim()).filter(Boolean)
-  if (parts.length === 0) return null
+  if (parts.length < 2) return null
   return parts[parts.length - 1]
 }
 
-// Valida "YYYY-MM" y devuelve el rango [inicio, fin) del mes en UTC.
-// Devuelve null si el param no vino o es inválido (se interpreta como "sin filtro").
 function parseMonthRange(monthParam: string | null): { start: Date; end: Date } | null {
   if (!monthParam) return null
   const match = /^(\d{4})-(\d{2})$/.exec(monthParam)
   if (!match) return null
 
   const year = Number(match[1])
-  const month = Number(match[2]) // 1-12
+  const month = Number(match[2])
   if (month < 1 || month > 12) return null
 
   const start = new Date(Date.UTC(year, month - 1, 1))
@@ -224,14 +220,14 @@ export async function GET(req: NextRequest) {
       .sort((a, b) => b.daysSinceUpdate - a.daysSinceUpdate)
       .slice(0, MAX_LIST_ITEMS)
 
-    // ---- Provincias con más envíos (extraído del campo address) ----
-    const provinceMap = new Map<string, number>()
+    // ---- Ciudades con más envíos (extraído del campo address) ----
+    const cityMap = new Map<string, number>()
     for (const s of shipments) {
-      const province = extractProvince(s.address)
-      if (!province) continue
-      provinceMap.set(province, (provinceMap.get(province) ?? 0) + 1)
+      const city = extractCity(s.address)
+      if (!city) continue
+      cityMap.set(city, (cityMap.get(city) ?? 0) + 1)
     }
-    const topDestinations = Array.from(provinceMap.entries())
+    const topDestinations = Array.from(cityMap.entries())
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, MAX_DESTINATIONS)
