@@ -32,8 +32,8 @@ export default async function PublicTrackingPage({
   let tokenUserId: string | null = null
   if (!userId && token) {
     const verified = await verifyShipmentToken(token, id)
-    if (verified && verified.userId === shipment.buyerId) {
-      tokenUserId = verified.userId
+    if (verified && verified.clerkId === shipment.buyerId) {
+      tokenUserId = verified.clerkId
     }
   }
 

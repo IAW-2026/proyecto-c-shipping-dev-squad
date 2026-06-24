@@ -1,4 +1,4 @@
-/**
+/*
  * Token firmado para permitir que un usuario autenticado en la app buyer
  * vea su envío en esta app sin tener que loguearse de nuevo con Clerk.
  *
@@ -42,7 +42,7 @@ function base64urlDecode(str: string): ArrayBuffer {
 }
 
 type ShipmentTokenPayload = {
-  userId: string;
+  clerkId: string;
   orderId: string;
   exp: number;
 };
@@ -53,7 +53,7 @@ type ShipmentTokenPayload = {
  * cliente, porque el secreto no puede llegar al navegador.
  */
 export async function generateShipmentToken(
-  data: { userId: string; orderId: string },
+  data: { clerkId: string; orderId: string },
   ttlSeconds = 180
 ): Promise<string> {
   const payload: ShipmentTokenPayload = {
@@ -78,7 +78,7 @@ export async function generateShipmentToken(
 export async function verifyShipmentToken(
   token: string,
   expectedOrderId: string
-): Promise<{ userId: string } | null> {
+): Promise<{ clerkId: string } | null> {
   const [payloadB64, sigB64] = token.split(".");
   if (!payloadB64 || !sigB64) return null;
 
@@ -99,7 +99,7 @@ export async function verifyShipmentToken(
     if (payload.exp < Math.floor(Date.now() / 1000)) return null;
     if (payload.orderId !== expectedOrderId) return null;
 
-    return { userId: payload.userId };
+    return { clerkId: payload.clerkId };
   } catch {
     return null;
   }
