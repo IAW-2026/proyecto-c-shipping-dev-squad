@@ -94,6 +94,8 @@ export async function POST(req: NextRequest) {
           .filter(Boolean) as string[]
       ),
     ];
+    console.log("📦 itemsWithOrigin:", itemsWithOrigin);
+    console.log("📍 destination address:", body.address);
 
     if (itemsWithOrigin.length > 0 && body.address) {
       try {
@@ -110,7 +112,7 @@ export async function POST(req: NextRequest) {
           current > latest ? current : latest
         );
       } catch (geoError) {
-        console.warn("No se pudo calcular la ruta, usando estimación por defecto:", geoError);
+          console.error("❌ Error en cálculo de ruta:", geoError);
       }
     }
 
