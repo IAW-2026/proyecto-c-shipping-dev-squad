@@ -38,7 +38,7 @@ async function calculateShippingTime(
       },
     }
   );
-
+  console.log("ORS response:", JSON.stringify(response.data));
   const durationSeconds = response.data.routes[0].segments[0].duration;
   const PREP_SECONDS = 60 * 60;
   const BUFFER_DAYS = 2;
