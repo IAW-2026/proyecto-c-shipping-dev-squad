@@ -24,7 +24,7 @@ export function ShipmentInfo({ shipment }: Props) {
 
   const rows = [
     ["Destino", shipment.address],
-    ["Carrier", shipment.carrier === "MAIL" ? "Correo" : "Retiro en persona"],
+    ["Carrier", shipment.carrier === "MAIL" ? "Envio a domicilio" : "Retiro en sucursal"],
     ["Entrega estimada", shipment.estimatedDeliveryDate ? new Date(shipment.estimatedDeliveryDate).toLocaleDateString("es-AR") : "—"],
     ["Fecha de entrega", shipment.deliveryDate ? new Date(shipment.deliveryDate).toLocaleDateString("es-AR") : "—"],
   ]

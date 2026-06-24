@@ -38,7 +38,6 @@ async function calculateShippingTime(
       },
     }
   );
-  console.log("ORS response:", JSON.stringify(response.data));
   const durationSeconds = response.data.routes[0].segments[0].duration;
   const PREP_SECONDS = 60 * 60;
   const BUFFER_DAYS = 2;
@@ -59,8 +58,6 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    console.log("Body recibido:", JSON.stringify(body));
-
     if (!body.orderId || !body.buyerId || !body.address || !body.carrier || body.shippingCost === undefined || body.shippingCost === null) {
       return NextResponse.json(
         { error: "Faltan campos obligatorios: orderId, buyerId, address, carrier, shippingCost" },
