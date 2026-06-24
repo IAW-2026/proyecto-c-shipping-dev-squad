@@ -26,9 +26,6 @@ export default async function PublicTrackingPage({
 
   if (!shipment) notFound()
 
-  // Si no hay sesión de Clerk, probamos con el token que mandó la app buyer.
-  // Además de validar firma y vencimiento, chequeamos que el userId del
-  // token sea realmente el dueño de este envío (defensa extra).
   let tokenUserId: string | null = null
   if (!userId && token) {
     const verified = await verifyShipmentToken(token, id)
@@ -95,6 +92,7 @@ export default async function PublicTrackingPage({
         shipment={serialized}
         canEdit={role === "admin"}
         isGuest={!userId && !tokenUserId}
+        hasToken={!!tokenUserId}
       />
     </Suspense>
   )

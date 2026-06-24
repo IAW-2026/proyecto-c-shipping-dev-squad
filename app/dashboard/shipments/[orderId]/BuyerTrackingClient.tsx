@@ -11,9 +11,10 @@ interface Props {
   shipment: Shipment
   canEdit?: boolean
   isGuest?: boolean
+  hasToken?: boolean
 }
 
-export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest = false }: Props) {
+export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest = false, hasToken = false }: Props) {
   const [tracking, setTracking] = useState<TrackingItem[]>([])
   const router = useRouter()
 
@@ -28,7 +29,8 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
 
   return (
     <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
-      {!isGuest && (
+      {/* Flecha de volver: solo para usuarios con sesión real */}
+      {!isGuest && !hasToken && (
         <div
           onClick={() => {
             if (canEdit) {
@@ -42,6 +44,17 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
           {backLabel}
         </div>
       )}
+
+      {/* Botón de volver para usuarios que llegaron con token */}
+      {hasToken && (
+        <div
+          onClick={() => router.back()}
+          style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}
+        >
+          ← Volver a la página
+        </div>
+      )}
+
       <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>ORDEN #{shipment.orderId}</div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem", flexWrap: "wrap", gap: 8 }}>
         <div style={{ fontSize: 20, fontWeight: 500, color: "var(--foreground)" }}>Detalle del envío</div>
