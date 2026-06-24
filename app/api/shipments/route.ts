@@ -21,10 +21,19 @@ function nextWeekday(date: Date): Date {
 
 function splitDirecciones(raw: string): string[] {
   const dirs = raw
-    .split(/,\s*(?=[A-ZÁÉÍÓÚÑ][a-záéíóúñA-ZÁÉÍÓÚÑ.]+\s+\d)/)
+    .split(/,\s*(?=(?:[A-Za-z\u00C0-\u024F]+\.?\s+)+\d)/)
     .map(d => d.trim())
     .filter(Boolean)
   return dirs.length > 0 ? dirs : [raw.trim()]
+}
+
+function normalizeAddress(addr: string): string {
+  return addr
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
 }
 
 async function calculateShippingTime(
@@ -101,6 +110,7 @@ export async function POST(req: NextRequest) {
           .flatMap((item: { productOriginAddress?: string }) =>
             item.productOriginAddress ? splitDirecciones(item.productOriginAddress) : []
           )
+          .map(normalizeAddress)
       ),
     ];
 
