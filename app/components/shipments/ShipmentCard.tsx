@@ -26,31 +26,101 @@ export function ShipmentCard({ shipment: s, onClick, showBuyer = false }: Props)
       onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
       onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
     >
-      <div style={{
-        width: 100, minWidth: 100,
-        background: "var(--color-surface-alt)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 44, flexShrink: 0,
-      }}>
-        {main?.imageUrl
-          ? <img src={main.imageUrl} alt={main.name} style={{ width: 64, height: 64, objectFit: "contain" }} />
-          : "👟"}
+      <div
+        style={{
+          width: 120,
+          minWidth: 120,
+          background: "var(--color-surface-alt)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 8,
+          flexShrink: 0,
+        }}
+      >
+        {main?.imageUrl ? (
+          <img
+            src={main.imageUrl}
+            alt={main.name}
+            style={{
+              width: 90,
+              height: 90,
+              objectFit: "contain",
+              display: "block",
+            }}
+          />
+        ) : (
+          <span style={{ fontSize: 44 }}>👟</span>
+        )}
       </div>
-      <div style={{ padding: "0.875rem 1rem", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", minWidth: 0 }}>
+
+      <div
+        style={{
+          padding: "0.875rem 1rem",
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          minWidth: 0,
+        }}
+      >
         <div>
-          <div style={{ fontSize: 11, color: "var(--color-muted)", marginBottom: 4 }}>
+          <div
+            style={{
+              fontSize: 11,
+              color: "var(--color-muted)",
+              marginBottom: 4,
+            }}
+          >
             Orden #{s.orderId}
           </div>
-          <div style={{ fontSize: 15, fontWeight: 500, color: "var(--foreground)", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+
+          <div
+            style={{
+              fontSize: 15,
+              fontWeight: 500,
+              color: "var(--foreground)",
+              marginBottom: 2,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
             {main?.name ?? "Producto"}
           </div>
-          <div style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 10, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+
+          <div
+            style={{
+              fontSize: 12,
+              color: "var(--color-muted)",
+              marginBottom: 10,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
             {s.address}
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
+        >
           <StatusBadge status={s.status} size="sm" />
-          <span style={{ fontSize: 11, color: "var(--color-muted)", whiteSpace: "nowrap" }}>
+
+          <span
+            style={{
+              fontSize: 11,
+              color: "var(--color-muted)",
+              whiteSpace: "nowrap",
+            }}
+          >
             {s.status === "DELIVERED" && s.deliveryDate
               ? `Entregado ${new Date(s.deliveryDate).toLocaleDateString("es-AR")}`
               : s.estimatedDeliveryDate
