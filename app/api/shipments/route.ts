@@ -102,7 +102,6 @@ export async function POST(req: NextRequest) {
     estimatedDeliveryDate = nextWeekday(estimatedDeliveryDate);
 
     let finalAddress = body.address;
-
     const itemsWithOrigin: string[] = [
       ...new Set<string>(
         (body.items ?? [])
@@ -112,11 +111,13 @@ export async function POST(req: NextRequest) {
           .map(normalizeAddress)
       ),
     ];
+    console.log("🏠 itemsWithOrigin:", itemsWithOrigin);
+    console.log("📦 items recibidos:", body.items);
 
     if (itemsWithOrigin.length > 0 && body.address) {
       try {
         const destination = await geocodeAddress(body.address);
-
+        console.log("📍 destination:", destination); // ← acá
         const deliveryResults = await Promise.all(
           itemsWithOrigin.map(async (originAddress) => {
             const origin = await geocodeAddress(originAddress);
@@ -124,6 +125,8 @@ export async function POST(req: NextRequest) {
             return { date, address: originAddress };
           })
         );
+        console.log("📍 deliveryResults:", deliveryResults); // ← acá
+
 
         const farthest = deliveryResults.reduce((latest, current) =>
           current.date > latest.date ? current : latest
