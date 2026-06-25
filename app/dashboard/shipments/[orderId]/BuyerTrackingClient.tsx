@@ -16,6 +16,7 @@ interface Props {
 
 export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest = false, hasToken = false }: Props) {
   const [tracking, setTracking] = useState<TrackingItem[]>([])
+  const [returnUrl, setReturnUrl] = useState<string>("")
   const router = useRouter()
 
   const backLabel = canEdit ? "← Volver a pedidos" : "← Volver a mis envíos"
@@ -26,6 +27,12 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
       .then(r => r.json())
       .then(setTracking)
   }, [shipment.orderId])
+
+  useEffect(() => {
+    if (hasToken && document.referrer) {
+      setReturnUrl(document.referrer)
+    }
+  }, [hasToken])
 
   return (
     <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
@@ -48,7 +55,16 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
       {/* Botón de volver para usuarios que llegaron con token */}
       {hasToken && (
         <div
-          onClick={() => router.back()}
+          onClick={() => {
+            if (returnUrl) {
+              const currentTheme = document.documentElement.getAttribute("data-theme") || "light"
+              const url = new URL(returnUrl)
+              url.searchParams.set("theme", currentTheme)
+              window.location.href = url.toString()
+            } else {
+              router.back()
+            }
+          }}
           style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}
         >
           ← Volver a la página
