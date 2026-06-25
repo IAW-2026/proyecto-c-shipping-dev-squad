@@ -115,15 +115,9 @@ export async function POST(req: NextRequest) {
       ]),
     ];
 
-    console.log("📦 items recibidos:", JSON.stringify(body.items));
-    console.log("🏠 itemsWithOrigin:", itemsWithOrigin);
-    console.log("📍 finalAddress inicial:", finalAddress);
-
     if (itemsWithOrigin.length > 0 && addressParts[0]) {
       try {
         const destination = await geocodeAddress(addressParts[0]);
-        console.log("📍 destination geocoded:", destination);
-
         const deliveryResults = await Promise.all(
           itemsWithOrigin.map(async (originAddress) => {
             const origin = await geocodeAddress(originAddress);
@@ -131,7 +125,6 @@ export async function POST(req: NextRequest) {
             return { date, address: originAddress };
           })
         );
-        console.log("📍 deliveryResults:", deliveryResults);
 
         const farthest = deliveryResults.reduce((latest, current) =>
           current.date > latest.date ? current : latest
@@ -146,8 +139,6 @@ export async function POST(req: NextRequest) {
         console.error("❌ Error en cálculo de ruta:", geoError);
       }
     }
-
-    const trackingDescription = carrier === "MAIL" ? "Envío a domicilio" : "Retiro en sucursal";
 
     let shipment
     try {
@@ -166,7 +157,7 @@ export async function POST(req: NextRequest) {
             create: {
               location: "Centro de distribución",
               status: "PENDING",
-              description: trackingDescription,
+              description: "El envío ha sido creado y está pendiente de procesamiento.",
             },
           },
         },
