@@ -9,8 +9,15 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false)  // evita el mismatch
 
   useEffect(() => {
-    const saved = localStorage.getItem("theme")
-    if (saved === "dark") setDark(true)
+    const match = document.cookie.match(/(?:^|;\s*)token_theme=([^;]*)/)
+    const tokenTheme = match ? match[1] : null
+
+    if (tokenTheme === "dark" || tokenTheme === "light") {
+      setDark(tokenTheme === "dark")
+    } else {
+      const saved = localStorage.getItem("theme")
+      if (saved === "dark") setDark(true)
+    }
     setMounted(true)
   }, [])
 

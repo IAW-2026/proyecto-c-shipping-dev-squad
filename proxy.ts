@@ -27,7 +27,16 @@ export default clerkMiddleware(async (auth, req) => {
     if (token) {
       const verified = await verifyShipmentToken(token, orderId);
       if (verified) {
-        return NextResponse.next();
+        const response = NextResponse.next();
+        const theme = req.nextUrl.searchParams.get("theme");
+        if (theme === "light" || theme === "dark") {
+          response.cookies.set("token_theme", theme, {
+            maxAge: 300,
+            path: "/",
+            sameSite: "lax",
+          });
+        }
+        return response;
       }
     }
   }

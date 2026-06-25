@@ -11,7 +11,7 @@ export default async function PublicTrackingPage({
   searchParams,
 }: {
   params: Promise<{ orderId: string }>
-  searchParams: Promise<{ mode?: string; token?: string }>
+  searchParams: Promise<{ mode?: string; token?: string; theme?: string }>
 }) {
   const { userId, sessionClaims } = await auth()
 
