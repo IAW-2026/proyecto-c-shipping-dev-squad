@@ -16,7 +16,7 @@ export default async function PublicTrackingPage({
   const { userId, sessionClaims } = await auth()
 
   const { orderId } = await params
-  const { mode, token } = await searchParams
+  const { mode, token, theme } = await searchParams
   const id = orderId
 
   const shipment = await prisma.shipment.findUnique({
@@ -93,6 +93,7 @@ export default async function PublicTrackingPage({
         canEdit={role === "admin"}
         isGuest={!userId && !tokenUserId}
         hasToken={!!tokenUserId}
+        theme={theme}
       />
     </Suspense>
   )
