@@ -101,23 +101,29 @@ export async function POST(req: NextRequest) {
     estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 15);
     estimatedDeliveryDate = nextWeekday(estimatedDeliveryDate);
 
-    let finalAddress = body.address;
+    const addressParts = splitDirecciones(body.address).map(normalizeAddress);
+    let finalAddress = addressParts[0];
+
     const itemsWithOrigin: string[] = [
-      ...new Set<string>(
-        (body.items ?? [])
+      ...new Set<string>([
+        ...addressParts.slice(1),
+        ...(body.items ?? [])
           .flatMap((item: { productOriginAddress?: string }) =>
             item.productOriginAddress ? splitDirecciones(item.productOriginAddress) : []
           )
-          .map(normalizeAddress)
-      ),
+          .map(normalizeAddress),
+      ]),
     ];
-    console.log("🏠 itemsWithOrigin:", itemsWithOrigin);
-    console.log("📦 items recibidos:", body.items);
 
-    if (itemsWithOrigin.length > 0 && body.address) {
+    console.log("📦 items recibidos:", JSON.stringify(body.items));
+    console.log("🏠 itemsWithOrigin:", itemsWithOrigin);
+    console.log("📍 finalAddress inicial:", finalAddress);
+
+    if (itemsWithOrigin.length > 0 && addressParts[0]) {
       try {
-        const destination = await geocodeAddress(body.address);
-        console.log("📍 destination:", destination); // ← acá
+        const destination = await geocodeAddress(addressParts[0]);
+        console.log("📍 destination geocoded:", destination);
+
         const deliveryResults = await Promise.all(
           itemsWithOrigin.map(async (originAddress) => {
             const origin = await geocodeAddress(originAddress);
@@ -125,8 +131,7 @@ export async function POST(req: NextRequest) {
             return { date, address: originAddress };
           })
         );
-        console.log("📍 deliveryResults:", deliveryResults); // ← acá
-
+        console.log("📍 deliveryResults:", deliveryResults);
 
         const farthest = deliveryResults.reduce((latest, current) =>
           current.date > latest.date ? current : latest
