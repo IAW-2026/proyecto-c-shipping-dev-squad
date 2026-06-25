@@ -82,7 +82,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Mapeo de valores del buyer al enum interno
     const carrier = CARRIER_MAP[body.carrier.toLowerCase()]
     if (!carrier) {
       return NextResponse.json(
@@ -93,16 +92,16 @@ export async function POST(req: NextRequest) {
 
     const normalizedOrderId = body.orderId.toLowerCase();
 
-    // Idempotencia: si ya existe un envío para esta orden, lo devolvemos
     const existing = await prisma.shipment.findUnique({ where: { orderId: normalizedOrderId } });
     if (existing) {
       return NextResponse.json(existing, { status: 200 });
     }
 
-    // Fallback: 15 días a partir de hoy en día de semana
     let estimatedDeliveryDate = new Date();
     estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 15);
     estimatedDeliveryDate = nextWeekday(estimatedDeliveryDate);
+
+    let finalAddress = body.address;
 
     const itemsWithOrigin: string[] = [
       ...new Set<string>(
@@ -118,16 +117,23 @@ export async function POST(req: NextRequest) {
       try {
         const destination = await geocodeAddress(body.address);
 
-        const deliveryDates = await Promise.all(
+        const deliveryResults = await Promise.all(
           itemsWithOrigin.map(async (originAddress) => {
             const origin = await geocodeAddress(originAddress);
-            return calculateShippingTime(origin, destination);
+            const date = await calculateShippingTime(origin, destination);
+            return { date, address: originAddress };
           })
         );
 
-        estimatedDeliveryDate = deliveryDates.reduce((latest, current) =>
-          current > latest ? current : latest
+        const farthest = deliveryResults.reduce((latest, current) =>
+          current.date > latest.date ? current : latest
         );
+
+        estimatedDeliveryDate = farthest.date;
+
+        if (carrier === "PICKUP") {
+          finalAddress = farthest.address;
+        }
       } catch (geoError) {
         console.error("❌ Error en cálculo de ruta:", geoError);
       }
@@ -141,7 +147,7 @@ export async function POST(req: NextRequest) {
         data: {
           orderId: normalizedOrderId,
           buyerId: body.buyerId,
-          address: body.address,
+          address: finalAddress,
           carrier,
           shippingCost: body.shippingCost,
           estimatedDeliveryDate,
@@ -159,7 +165,6 @@ export async function POST(req: NextRequest) {
       });
     } catch (createError: any) {
       if (createError.code === "P2002") {
-        // Race condition: otro request creó el envío al mismo tiempo
         const existing = await prisma.shipment.findUnique({ where: { orderId: normalizedOrderId } });
         return NextResponse.json(existing, { status: 200 });
       }

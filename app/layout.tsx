@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
-import { cookies } from "next/headers";
 import Navbar from "./components/Navbar";
 import { ScrollToTop } from "./components/ScrollToTop";
 
@@ -14,14 +13,13 @@ export const metadata: Metadata = {
   description: "Seguimiento de envíos",
 };
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const cookieStore = await cookies();
-  const theme = cookieStore.get("token_theme")?.value;
-  const dataTheme = theme === "light" || theme === "dark" ? theme : undefined;
-
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ClerkProvider>
-      <html lang="es" data-theme={dataTheme} className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+      <html lang="es" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        </head>
         <body className="min-h-full flex flex-col" style={{ width: "100%" }}>
           <ScrollToTop />
           <Navbar />
