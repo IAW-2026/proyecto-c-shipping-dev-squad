@@ -132,9 +132,6 @@ export async function POST(req: NextRequest) {
 
         estimatedDeliveryDate = farthest.date;
 
-        if (carrier === "PICKUP") {
-          finalAddress = farthest.address;
-        }
       } catch (geoError) {
         console.error("❌ Error en cálculo de ruta:", geoError);
       }
