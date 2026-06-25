@@ -13,9 +13,11 @@ const CARRIER_MAP: Record<string, "MAIL" | "PICKUP"> = {
 }
 
 function nextWeekday(date: Date): Date {
-  const day = date.getDay();
+  // Convertir a timezone argentina para evaluar el día correcto
+  const argDate = new Date(date.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }));
+  const day = argDate.getDay();
   if (day === 6) date.setDate(date.getDate() + 2);
-  if (day === 0) date.setDate(date.getDate() + 1);
+  else if (day === 0) date.setDate(date.getDate() + 1);
   return date;
 }
 
