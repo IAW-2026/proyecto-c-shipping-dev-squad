@@ -45,8 +45,21 @@ export default function BuyerTrackingClient({ shipment, role, canEdit = false, i
 
   return (
     <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
-      {/* Flecha de volver: solo para usuarios con sesión real (sin referrer externo) */}
-      {!returnUrl && !isGuest && !hasToken && (
+      {/* Prioridad 1: si tiene token, siempre vuelve a buyer app */}
+      {hasToken && (
+        <div
+          onClick={() => {
+            const currentTheme = document.documentElement.getAttribute("data-theme") || "light"
+            window.location.href = `https://zapasya.vercel.app/pedidos?theme=${currentTheme}`
+          }}
+          style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}
+        >
+          ← Volver a la página
+        </div>
+      )}
+
+      {/* Prioridad 2: vino de app externa sin token → vuelve según rol */}
+      {!hasToken && returnUrl && (
         <div
           onClick={() => {
             if (role === "admin") {
@@ -63,14 +76,11 @@ export default function BuyerTrackingClient({ shipment, role, canEdit = false, i
         </div>
       )}
 
-      {/* Botón de volver: si tiene token va a buyer app, sino según rol */}
-      {returnUrl && (
+      {/* Prioridad 3: navegación interna sin token */}
+      {!hasToken && !returnUrl && !isGuest && (
         <div
           onClick={() => {
-            const currentTheme = document.documentElement.getAttribute("data-theme") || "light"
-            if (hasToken) {
-              window.location.href = `https://zapasya.vercel.app/pedidos?theme=${currentTheme}`
-            } else if (role === "admin") {
+            if (role === "admin") {
               router.push("/dashboard/admin/pedidos")
             } else if (role === "logistics_operator") {
               router.push("/dashboard/operator")
@@ -80,7 +90,7 @@ export default function BuyerTrackingClient({ shipment, role, canEdit = false, i
           }}
           style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}
         >
-          {hasToken ? "← Volver a la página" : backLabel}
+          {backLabel}
         </div>
       )}
 
