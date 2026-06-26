@@ -104,25 +104,3 @@ export async function verifyShipmentToken(
     return null;
   }
 }
-
-export async function generateReturnToken(ttlSeconds = 180): Promise<string> {
-  const payload = { exp: Math.floor(Date.now() / 1000) + ttlSeconds }
-  const payloadBytes = new TextEncoder().encode(JSON.stringify(payload))
-  const payloadB64 = base64urlEncode(payloadBytes.buffer as ArrayBuffer)
-  const key = await getKey()
-  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payloadB64))
-  const sigB64 = base64urlEncode(sig)
-  return `${payloadB64}.${sigB64}`
-}
-
-export async function verifyReturnToken(token: string): Promise<boolean> {
-  const [payloadB64, sigB64] = token.split(".")
-  if (!payloadB64 || !sigB64) return false
-  try {
-    const key = await getKey()
-    const valid = await crypto.subtle.verify("HMAC", key, base64urlDecode(sigB64), new TextEncoder().encode(payloadB64))
-    if (!valid) return false
-    const payload = JSON.parse(new TextDecoder().decode(base64urlDecode(payloadB64)))
-    return payload.exp >= Math.floor(Date.now() / 1000)
-  } catch { return false }
-}

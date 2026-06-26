@@ -60,22 +60,12 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
         </div>
       )}
 
-      {/* Botón de volver a app externa (payments / buyer / etc) */}
+      {/* Botón de volver a app externa */}
       {returnUrl && (
         <div
-          onClick={async () => {
+          onClick={() => {
             const currentTheme = document.documentElement.getAttribute("data-theme") || "light"
-
-            if (returnUrl.includes("proyecto-c-payments")) {
-              const res = await fetch("/api/generate-return-token", { method: "POST" })
-              const { token } = await res.json()
-              window.location.href = `https://proyecto-c-payments-dev-squad.vercel.app/pago/exitoso?token=${token}&theme=${currentTheme}`
-            } else if (returnUrl.includes("zapasya.vercel.app")) {
-              window.location.href = `https://zapasya.vercel.app/pedidos?theme=${currentTheme}`
-            } else {
-              const sep = returnUrl.includes("?") ? "&" : "?"
-              window.location.href = `${returnUrl}${sep}theme=${currentTheme}`
-            }
+            window.location.href = `https://zapasya.vercel.app/pedidos?theme=${currentTheme}`
           }}
           style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}
         >
