@@ -17,17 +17,7 @@ export default function HomeClient() {
   const { isSignedIn, isLoaded } = useAuth()
   const router = useRouter()
 
-  const [dark, setDark] = useState(() => {
-    if (typeof window === "undefined") return false
-    const html = document.documentElement
-    return (
-      html.getAttribute("data-theme") === "dark" ||
-      html.classList.contains("dark") ||
-      (!html.getAttribute("data-theme") &&
-        !html.classList.contains("light") &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches)
-    )
-  })
+  const [dark, setDark] = useState<boolean | null>(null)
 
   useEffect(() => {
     if (isLoaded && isSignedIn) router.replace("/dashboard/buyer")
@@ -100,15 +90,17 @@ export default function HomeClient() {
       <div className="landing-grid">
         <div className="landing-left">
           <div style={{ marginBottom: -50, marginLeft: "-1.5rem", width: "fit-content", lineHeight: 0 }}>
-            <Image
-              src={dark ? "/logo-oscuro.webp" : "/logo-claro.webp"}
-              alt="ZapasYA"
-              width={450}
-              height={150}
-              priority
-              quality={80}
-              style={{ width: "clamp(280px, 38vw, 450px)", height: "auto", display: "block" }}
-            />
+            {dark !== null && (
+              <Image
+                src={dark ? "/logo-oscuro.webp" : "/logo-claro.webp"}
+                alt="ZapasYA"
+                width={450}
+                height={150}
+                priority
+                quality={80}
+                style={{ width: "clamp(280px, 38vw, 450px)", height: "auto", display: "block" }}
+              />
+            )}
           </div>
 
           <div style={{ fontSize: 28, fontWeight: 700, color: "var(--foreground)", marginBottom: 8 }}>
