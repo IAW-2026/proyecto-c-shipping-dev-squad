@@ -9,18 +9,19 @@ import {
 
 interface Props {
   shipment: Shipment
+  role?: string | null
   canEdit?: boolean
   isGuest?: boolean
   hasToken?: boolean
   theme?: string
 }
 
-export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest = false, hasToken = false, theme }: Props) {
+export default function BuyerTrackingClient({ shipment, role, canEdit = false, isGuest = false, hasToken = false, theme }: Props) {
   const [tracking, setTracking] = useState<TrackingItem[]>([])
   const [returnUrl, setReturnUrl] = useState("")
   const router = useRouter()
 
-  const backLabel = canEdit ? "← Volver a pedidos" : "← Volver a mis envíos"
+  const backLabel = role === "admin" ? "← Volver a pedidos" : role === "logistics_operator" ? "← Volver a envíos" : "← Volver a mis envíos"
   const isDelivered = shipment.status === "DELIVERED"
 
   useEffect(() => {
@@ -48,8 +49,10 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
       {!returnUrl && !isGuest && !hasToken && (
         <div
           onClick={() => {
-            if (canEdit) {
+            if (role === "admin") {
               router.push("/dashboard/admin/pedidos")
+            } else if (role === "logistics_operator") {
+              router.push("/dashboard/operator")
             } else {
               router.push("/dashboard/buyer")
             }
@@ -60,16 +63,24 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
         </div>
       )}
 
-      {/* Botón de volver a app externa */}
+      {/* Botón de volver: si tiene token va a buyer app, sino según rol */}
       {returnUrl && (
         <div
           onClick={() => {
             const currentTheme = document.documentElement.getAttribute("data-theme") || "light"
-            window.location.href = `https://zapasya.vercel.app/pedidos?theme=${currentTheme}`
+            if (hasToken) {
+              window.location.href = `https://zapasya.vercel.app/pedidos?theme=${currentTheme}`
+            } else if (role === "admin") {
+              router.push("/dashboard/admin/pedidos")
+            } else if (role === "logistics_operator") {
+              router.push("/dashboard/operator")
+            } else {
+              router.push("/dashboard/buyer")
+            }
           }}
           style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}
         >
-          ← Volver a la página
+          {hasToken ? "← Volver a la página" : backLabel}
         </div>
       )}
 

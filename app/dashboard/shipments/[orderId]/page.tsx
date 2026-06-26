@@ -91,6 +91,7 @@ export default async function PublicTrackingPage({
     <Suspense fallback={null}>
       <BuyerTrackingClient
         shipment={serialized}
+        role={role}
         canEdit={role === "admin"}
         isGuest={!userId && !tokenUserId}
         hasToken={!!tokenUserId}
