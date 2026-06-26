@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { verifyApiKey } from "@/lib/apiAuth"
+import { capitalize } from "@/lib/format"
 
 const PAGE_SIZE = 20
 
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       {
-        shipments,
+        shipments: shipments.map(s => ({ ...s, address: capitalize(s.address) })),
         total,
         page,
         totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),

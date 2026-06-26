@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { geocodeAddress } from "@/lib/geocode";
 import { verifyApiKey } from "@/lib/apiAuth";
+import { capitalize } from "@/lib/format";
 import axios from "axios";
 
 const ORS_API_KEY = process.env.ORS_API_KEY!;
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest) {
 
     const existing = await prisma.shipment.findUnique({ where: { orderId: normalizedOrderId } });
     if (existing) {
-      return NextResponse.json(existing, { status: 200 });
+      return NextResponse.json({ ...existing, address: capitalize(existing.address) }, { status: 200 });
     }
 
     let estimatedDeliveryDate = new Date();
@@ -164,12 +165,12 @@ export async function POST(req: NextRequest) {
     } catch (createError: any) {
       if (createError.code === "P2002") {
         const existing = await prisma.shipment.findUnique({ where: { orderId: normalizedOrderId } });
-        return NextResponse.json(existing, { status: 200 });
+        return NextResponse.json({ ...existing!, address: capitalize(existing!.address) }, { status: 200 });
       }
       throw createError;
     }
 
-    return NextResponse.json(shipment, { status: 201 });
+    return NextResponse.json({ ...shipment, address: capitalize(shipment.address) }, { status: 201 });
   } catch (error) {
     console.error("Error al crear el envío:", error);
     return NextResponse.json({ error: "Error al crear el envío" }, { status: 500 });
@@ -193,7 +194,7 @@ export async function GET(req: NextRequest) {
       include: { items: true },
     });
 
-    return NextResponse.json(shipments);
+    return NextResponse.json(shipments.map(s => ({ ...s, address: capitalize(s.address) })));
   } catch (error) {
     console.error("Error al obtener los envíos:", error);
     return NextResponse.json({ error: "Error al obtener los envíos" }, { status: 500 });

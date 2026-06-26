@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { verifyApiKey } from "@/lib/apiAuth";
+import { capitalize } from "@/lib/format";
 
 const ORDER = ["PENDING", "PREPARING", "IN_TRANSIT", "DELIVERED"]
 
@@ -20,11 +21,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
     if (!shipment) {
       return NextResponse.json({ error: "Envío no encontrado" }, { status: 404 });
     }
-    return NextResponse.json(shipment);
-  } catch (error) {
-    console.error("Error al obtener el envío:", error);
-    return NextResponse.json({ error: "Error al obtener el envío" }, { status: 500 });
-  }
+      return NextResponse.json({ ...shipment, address: capitalize(shipment.address) });
+    } catch (error) {
+      console.error("Error al obtener el envío:", error);
+      return NextResponse.json({ error: "Error al obtener el envío" }, { status: 500 });
+    }
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ order_id: string }> }) {
@@ -97,7 +98,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
       }
     }
 
-    return NextResponse.json(shipment)
+    return NextResponse.json({ ...shipment, address: capitalize(shipment.address) })
   } catch (error) {
     console.error("Error al actualizar el envío:", error)
     return NextResponse.json({ error: "Error al actualizar el envío" }, { status: 500 })

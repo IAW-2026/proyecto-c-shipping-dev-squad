@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { verifyApiKey } from "@/lib/apiAuth"
+import { capitalize } from "@/lib/format"
 
 const ORDER = ["PENDING", "PREPARING", "IN_TRANSIT", "DELIVERED"]
 
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
       return NextResponse.json({ error: "Envío no encontrado" }, { status: 404, headers: corsHeaders })
     }
 
-    return NextResponse.json(shipment, { headers: corsHeaders })
+    return NextResponse.json({ ...shipment, address: capitalize(shipment.address) }, { headers: corsHeaders })
   } catch (error) {
     console.error("Error al obtener el envío:", error)
     return NextResponse.json({ error: "Error al obtener el envío" }, { status: 500, headers: corsHeaders })
@@ -102,7 +103,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
       }
     }
 
-    return NextResponse.json(shipment, { headers: corsHeaders })
+    return NextResponse.json({ ...shipment, address: capitalize(shipment.address) }, { headers: corsHeaders })
   } catch (error) {
     console.error("Error al actualizar el envío:", error)
     return NextResponse.json({ error: "Error al actualizar el envío" }, { status: 500, headers: corsHeaders })
