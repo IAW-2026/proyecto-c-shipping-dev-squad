@@ -1,0 +1,188 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background 0.2s, color 0.2s;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (max-width: 767px) {
+  body {
+    font-size: 16px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  main {
+    padding-left: 0 !important;
+  }
+}
+
+:root,
+[data-theme="light"] {
+  --background:           #f8fafc;
+  --foreground:           #171717;
+
+  --color-background:     #f8fafc;
+  --color-foreground:     #171717;
+
+  --color-primary:        #000000;
+  --color-on-primary:     #ffffff;
+  --color-primary-dark:   #27272a;
+
+  --color-secondary:      #ffffff;
+  --color-secondary-bg:   #4b5563;
+  --color-secondary-dark: #374151;
+
+  --color-success:        #16a34a;
+  --color-success-dark:   #15803d;
+  --color-success-light:  #dcfce7;
+
+  --color-danger:         #dc2626;
+  --color-danger-dark:    #b91c1c;
+  --color-danger-light:   #fee2e2;
+
+  --color-error:          #dc2626;
+  --color-error-light:    #fee2e2;
+
+  --color-info:           #2563eb;
+  --color-info-dark:      #1d4ed8;
+  --color-info-light:     #dbeafe;
+
+  --color-muted:          #6b7280;
+  --color-muted-light:    #f3f4f6;
+
+  --color-border:         #e5e7eb;
+  --color-surface:        #ffffff;
+  --color-surface-alt:    #f3f4f6;
+  --color-navbar:         #000000;
+  --color-navbar-text:    #ffffff;
+}
+
+[data-theme="dark"] {
+  --background:           #0a0a0a;
+  --foreground:           #ededed;
+
+  --color-background:     #0a0a0a;
+  --color-foreground:     #ededed;
+
+  --color-primary:        #ffffff;
+  --color-on-primary:     #000000;
+  --color-primary-dark:   #e4e4e7;
+
+  --color-secondary:      #0a0a0a;
+  --color-secondary-bg:   #3f3f46;
+  --color-secondary-dark: #52525b;
+
+  --color-success:        #4ade80;
+  --color-success-dark:   #22c55e;
+  --color-success-light:  #052e16;
+
+  --color-danger:         #f87171;
+  --color-danger-dark:    #ef4444;
+  --color-danger-light:   #450a0a;
+
+  --color-error:          #f87171;
+  --color-error-light:    #450a0a;
+
+  --color-info:           #60a5fa;
+  --color-info-dark:      #3b82f6;
+  --color-info-light:     #172554;
+
+  --color-muted:          #a1a1aa;
+  --color-muted-light:    #1f1f1f;
+
+  --color-border:         #2a2a2a;
+  --color-surface:        #111111;
+  --color-surface-alt:    #1a1a1a;
+  --color-navbar:         #ffffff;
+  --color-navbar-text:    #000000;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary-bg);
+  color: var(--color-secondary);
+}
+.btn-secondary:hover {
+  background-color: var(--color-secondary-dark);
+}
+
+.btn-success {
+  background-color: var(--color-success);
+  color: var(--color-secondary);
+}
+.btn-success:hover {
+  background-color: var(--color-success-dark);
+}
+
+.btn-danger {
+  background-color: var(--color-danger);
+  color: var(--color-secondary);
+}
+.btn-danger:hover {
+  background-color: var(--color-danger-dark);
+}
+
+.btn-info {
+  background-color: var(--color-info);
+  color: var(--color-secondary);
+}
+.btn-info:hover {
+  background-color: var(--color-info-dark);
+}
+
+.badge-danger {
+  background-color: var(--color-danger);
+  color: var(--color-secondary);
+}
+
+.bg-surface     { background-color: var(--color-surface); }
+.bg-surface-alt { background-color: var(--color-surface-alt); }
+
+.text-primary   { color: var(--color-primary); }
+.text-secondary { color: var(--color-secondary); }
+.text-success   { color: var(--color-success); }
+.text-danger    { color: var(--color-danger); }
+.text-info      { color: var(--color-info); }
+.text-muted     { color: var(--color-muted); }
+
+.border-primary { border-color: var(--color-primary); }
+.border-muted   { border-color: var(--color-border); }
+.border-success { border-color: var(--color-success); }
+.border-info    { border-color: var(--color-info); }
+.border-danger  { border-color: var(--color-danger); }
