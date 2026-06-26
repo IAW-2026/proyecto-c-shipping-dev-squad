@@ -65,15 +65,15 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
         <div
           onClick={async () => {
             const currentTheme = document.documentElement.getAttribute("data-theme") || "light"
-            const sep = returnUrl.includes("?") ? "&" : "?"
 
             if (returnUrl.includes("proyecto-c-payments")) {
               const res = await fetch("/api/generate-return-token", { method: "POST" })
               const { token } = await res.json()
-              window.location.href = `${returnUrl}${sep}token=${token}&theme=${currentTheme}`
+              window.location.href = `https://proyecto-c-payments-dev-squad.vercel.app/pago/exitoso?token=${token}&theme=${currentTheme}`
             } else if (returnUrl.includes("zapasya.vercel.app")) {
               window.location.href = `https://zapasya.vercel.app/pedidos?theme=${currentTheme}`
             } else if (returnUrl) {
+              const sep = returnUrl.includes("?") ? "&" : "?"
               window.location.href = `${returnUrl}${sep}theme=${currentTheme}`
             } else {
               router.back()
