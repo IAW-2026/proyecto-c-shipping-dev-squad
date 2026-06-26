@@ -71,6 +71,8 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
               const res = await fetch("/api/generate-return-token", { method: "POST" })
               const { token } = await res.json()
               window.location.href = `${returnUrl}${sep}token=${token}&theme=${currentTheme}`
+            } else if (returnUrl.includes("zapasya.vercel.app")) {
+              window.location.href = `https://zapasya.vercel.app/pedidos?theme=${currentTheme}`
             } else if (returnUrl) {
               window.location.href = `${returnUrl}${sep}theme=${currentTheme}`
             } else {
