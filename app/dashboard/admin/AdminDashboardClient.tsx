@@ -86,7 +86,11 @@ export default function AdminDashboardClient({ shipments }: Props) {
         const key = `${y}-${m}-${d}`
         return {
           label: date.toLocaleDateString("es-AR", { weekday: "short" }),
-          count: shipments.filter(s => s.createdAt.slice(0, 10) === key).length,
+          count: shipments.filter(s => {
+            const d = new Date(s.createdAt)
+            const localKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+            return localKey === key
+          }).length,
         }
       })
     }
