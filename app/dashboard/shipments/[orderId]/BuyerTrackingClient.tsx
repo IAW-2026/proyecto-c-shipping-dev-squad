@@ -17,6 +17,7 @@ interface Props {
 
 export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest = false, hasToken = false, theme }: Props) {
   const [tracking, setTracking] = useState<TrackingItem[]>([])
+  const [returnUrl, setReturnUrl] = useState("")
   const router = useRouter()
 
   const backLabel = canEdit ? "← Volver a pedidos" : "← Volver a mis envíos"
@@ -34,6 +35,12 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
       localStorage.setItem("theme", theme)
     }
   }, [theme])
+
+  useEffect(() => {
+    if (hasToken && document.referrer) {
+      setReturnUrl(document.referrer)
+    }
+  }, [hasToken])
 
   return (
     <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
@@ -56,7 +63,20 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
       {/* Botón de volver para usuarios que llegaron con token */}
       {hasToken && (
         <div
-          onClick={() => router.back()}
+          onClick={async () => {
+            const currentTheme = document.documentElement.getAttribute("data-theme") || "light"
+            const sep = returnUrl.includes("?") ? "&" : "?"
+
+            if (returnUrl.includes("proyecto-c-payments")) {
+              const res = await fetch("/api/generate-return-token", { method: "POST" })
+              const { token } = await res.json()
+              window.location.href = `${returnUrl}${sep}token=${token}&theme=${currentTheme}`
+            } else if (returnUrl) {
+              window.location.href = `${returnUrl}${sep}theme=${currentTheme}`
+            } else {
+              router.back()
+            }
+          }}
           style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}
         >
           ← Volver a la página
