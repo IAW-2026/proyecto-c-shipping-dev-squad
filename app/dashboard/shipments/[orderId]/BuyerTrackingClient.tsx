@@ -37,15 +37,15 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
   }, [theme])
 
   useEffect(() => {
-    if (hasToken && document.referrer) {
+    if (document.referrer && !document.referrer.startsWith(window.location.origin)) {
       setReturnUrl(document.referrer)
     }
-  }, [hasToken])
+  }, [])
 
   return (
     <div style={{ width: "90%", maxWidth: 1400, margin: "0 auto", padding: "2rem 1rem" }}>
-      {/* Flecha de volver: solo para usuarios con sesión real */}
-      {!isGuest && !hasToken && (
+      {/* Flecha de volver: solo para usuarios con sesión real (sin referrer externo) */}
+      {!returnUrl && !isGuest && !hasToken && (
         <div
           onClick={() => {
             if (canEdit) {
@@ -60,8 +60,8 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
         </div>
       )}
 
-      {/* Botón de volver para usuarios que llegaron con token */}
-      {hasToken && (
+      {/* Botón de volver a app externa (payments / buyer / etc) */}
+      {returnUrl && (
         <div
           onClick={async () => {
             const currentTheme = document.documentElement.getAttribute("data-theme") || "light"
@@ -72,11 +72,9 @@ export default function BuyerTrackingClient({ shipment, canEdit = false, isGuest
               window.location.href = `https://proyecto-c-payments-dev-squad.vercel.app/pago/exitoso?token=${token}&theme=${currentTheme}`
             } else if (returnUrl.includes("zapasya.vercel.app")) {
               window.location.href = `https://zapasya.vercel.app/pedidos?theme=${currentTheme}`
-            } else if (returnUrl) {
+            } else {
               const sep = returnUrl.includes("?") ? "&" : "?"
               window.location.href = `${returnUrl}${sep}theme=${currentTheme}`
-            } else {
-              router.back()
             }
           }}
           style={{ fontSize: 13, color: "var(--color-muted)", cursor: "pointer", marginBottom: "1.5rem" }}
