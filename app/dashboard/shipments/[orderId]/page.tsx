@@ -5,6 +5,7 @@ import { Suspense } from "react"
 import BuyerTrackingClient from "./BuyerTrackingClient"
 import OperatorTrackingClient from "./OperatorTrackingClient"
 import { verifyShipmentToken } from "@/lib/shipmentToken"
+import { capitalize } from "@/lib/format"
 
 export default async function PublicTrackingPage({
   params,
@@ -46,7 +47,7 @@ export default async function PublicTrackingPage({
     orderId: shipment.orderId,
     buyerId: shipment.buyerId,
     status: shipment.status,
-    address: shipment.address,
+    address: capitalize(shipment.address),
     carrier: shipment.carrier,
     shipmentDate: shipment.shipmentDate?.toISOString() ?? null,
     estimatedDeliveryDate: shipment.estimatedDeliveryDate?.toISOString() ?? null,

@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
+import { capitalize } from "@/lib/format"
 import AdminDashboardClient from "./AdminDashboardClient"
 
 export default async function AdminDashboardPage() {
@@ -19,7 +20,7 @@ export default async function AdminDashboardPage() {
         orderId: s.orderId,
         buyerId: s.buyerId,
         status: s.status,
-        address: s.address,
+        address: capitalize(s.address),
         carrier: s.carrier,
         shipmentDate: s.shipmentDate?.toISOString() ?? null,
         estimatedDeliveryDate: s.estimatedDeliveryDate?.toISOString() ?? null,

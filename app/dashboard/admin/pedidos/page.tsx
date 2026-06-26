@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
+import { capitalize } from "@/lib/format"
 import AdminPedidosClient from "./AdminPedidosClient"
 
 const PAGE_SIZE = 10
@@ -42,7 +43,7 @@ export default async function AdminPedidosPage({
         orderId: s.orderId,
         buyerId: s.buyerId,
         status: s.status,
-        address: s.address,
+        address: capitalize(s.address),
         carrier: s.carrier,
         shipmentDate: s.shipmentDate?.toISOString() ?? null,
         estimatedDeliveryDate: s.estimatedDeliveryDate?.toISOString() ?? null,
